@@ -50,7 +50,7 @@ export class Navigator{
 
     const from = this.current;
     this._stack.push(next);
-    return this.animate(from, next, next.transition);
+    return this.animateIn(next, from);
   }
 
   /**
@@ -65,7 +65,8 @@ export class Navigator{
     }
 
     this._stack.push(newScreen);
-    this.root.appendChild(newScreen.getElement(this.screenFactory));
+
+    this.animateIn(newScreen, this.current)
   }
 
   /**
@@ -79,7 +80,7 @@ export class Navigator{
 
     const next = new NavigationItem(id,state,options);
     this._stack.push(next);
-    return this.animate(previous, next, next.transition)
+    return this.animateIn(next, previous)
   }
 
   /**
@@ -95,30 +96,42 @@ export class Navigator{
     if('undefined' == typeof transition && from)
       transition = -from.transition;
 
-    return this.animate(from, to, transition);
+    return this.animateOut(from, to);
   }
 
   /**
+   * @param {NavigationItem} entering
+   * @param {NavigationItem} previous
    * @return Promise<NavigationEvent>
    */
-  animate(from, to, transition) {
-    const newElement = to.getElement(this.screenFactory);
+  animateIn(entering, previous) {
+    const newElement = entering.getElement(this.screenFactory); 
+    this.root.appendChild(newElement);
 
-    // if(ScreenTransition.None == transtion) {    
-      this.root.appendChild(newElement);
+    if (previous && ! entering.isOverlay && ! previous.keepAlive) {
+      const oldElement = previous.dehydrate();
+      if(oldElement && oldElement.parentElement)
+        this.root.removeChild(oldElement);
+    }
 
-      if (! to.isOverlay && from && ! from.keepAlive) {
-        const oldElement = from.dehydrate();
+    return Promise.resolve({previous,entering});
+  }
+
+  /**
+   * @param {NavigationItem} leaving
+   * @param {NavigationItem} next
+   * @return Promise<NavigationEvent>
+   */
+  animateOut(leaving, next) {
+      if ( ! leaving.keepAlive) {
+        const oldElement = leaving.dehydrate();
         if(oldElement && oldElement.parentElement)
           this.root.removeChild(oldElement);
       }
 
-      return Promise.resolve({
-        from,
-        to,
-        transition
-      });
-    //}
+    this.root.appendChild(next.getElement(this.screenFactory));
+
+    return Promise.resolve({leaving, next});
   }
 
   getState() {

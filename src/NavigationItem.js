@@ -13,6 +13,12 @@ import ScreenTransition from './ScreenTransition';
  * @return {object}
  */
 
+ /**
+ * @typedef Screen
+ * @property {HTMLElement} element
+ * @property {getStateFunction} getState
+ */
+
 /**
  * 
  */
