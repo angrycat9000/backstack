@@ -154,7 +154,7 @@ export class Navigator extends LitElement  {
     }
 
     this.baseScreenId = previous ? previous.frameId : 'none';
-    this.transitionName = entering.transition.in;
+    this.transitionName = entering.transition;
     this.transitionTarget = entering.frameId || 'none';
     return this.updateComplete
     .then(awaitAnimationFrame)
@@ -196,7 +196,7 @@ export class Navigator extends LitElement  {
     .then(awaitAnimationFrame)
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
-        this.transitionName = leaving.transition.in;
+        this.transitionName = leaving.transition;
         this.afterTransition = resolve
     }))
     .then(()=>{

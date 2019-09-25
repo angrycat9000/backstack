@@ -1,5 +1,4 @@
-import Navigo from 'navigo';
-import {html, LitElement} from 'lit-element';
+import {html, LitElement, css} from 'lit-element';
 import {render} from 'lit-html';
 
 import Navigation, { ScreenTransition } from './webapp-navigation';
@@ -11,8 +10,17 @@ class Screen extends LitElement {
     this.template = null;
   }
   
+  static get styles() {
+    return css`div{
+      background:white; 
+      height:100%;
+      width:100%;
+      position:absolute;
+    }`
+  }
+
   render() {
-    return html`<div style="background:white"><slot></slot></div>`;
+    return html`<div><slot></slot></div>`;
   }
 
   set template(value) {
@@ -28,7 +36,11 @@ function screenFactory(id, state) {
 
   switch(id) {
     case 'home':
-      screen.template = html`<h1>Home</h1><a href="view" @click=${click}>[View]</a><br><a href="edit" @click=${click}>[Edit]</a>`
+      screen.template = html`<h1>Home</h1>
+        <a href="view" @click=${click}>View</a><br>
+        <a href="edit" data-transition="slide-up" @click=${click}>Edit</a><br>
+        <a href="view" data-transition="zoom-in" @click=${click}>Zoom</a><br>
+        <a href="view" data-transition="fade-in" @click=${click}>Fade</a>`;
       break;
     case 'edit':
       screen.template = html`<h1><button @click=${back}>Back</button> Edit</h1><p>Edit ${state.id}</p>`;
@@ -49,16 +61,15 @@ function screenFactory(id, state) {
 
 function showScreen(id, state) {
   console.log('before', navigator.getState())
-  navigator.push(id, state, {transition:ScreenTransition.SlideLeft})
+
   .then(()=>{console.log('Push Done')})
   console.log('after', navigator.getState())
 }
 
 function click(event) {
-  const url = event.currentTarget.href;
-  console.log(url);
+  const transition = event.currentTarget.getAttribute('data-transition') || ScreenTransition.SlideLeft;
   const id = event.currentTarget.getAttribute('href')
-  showScreen(id, {state:'test'});
+  navigator.push(id, {id:transition}, {transition:transition})
   event.preventDefault();
 }
 
