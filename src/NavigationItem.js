@@ -31,7 +31,7 @@ export class NavigationItem {
   constructor(id, state, options) {
     options = {
       keepAlive:false,
-      isOverlay: false,
+      //isOverlay: false,
       transition: ScreenTransition.None,
       element:null,
       ...options
@@ -47,7 +47,7 @@ export class NavigationItem {
     this.keepAlive = options.keepAlive;
 
     /** @property {boolean} */
-    this.isOverlay = options.isOverlay;
+    //this.isOverlay = options.isOverlay;
 
     /** @property {ScreenTransition} */
     this.transition = options.transition;
@@ -70,7 +70,7 @@ export class NavigationItem {
    * @return {HTMLElement}
    */
   getElement(factory) {
-    if (!this._element && factory) {
+    if ( ! this._element && factory) {
       const r = factory(this.id, this._stateValue);
 
       if( !r)

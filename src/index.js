@@ -2,7 +2,7 @@ import Navigo from 'navigo';
 import {html, LitElement} from 'lit-element';
 import {render} from 'lit-html';
 
-import Navigation from './src/webapp-navigation';
+import Navigation, { ScreenTransition } from './webapp-navigation';
 
 console.log('ready');
 
@@ -12,7 +12,7 @@ class Screen extends LitElement {
   }
   
   render() {
-    return html`<slot></slot>`;
+    return html`<div style="background:white"><slot></slot></div>`;
   }
 
   set template(value) {
@@ -28,7 +28,7 @@ function screenFactory(id, state) {
 
   switch(id) {
     case 'home':
-      screen.template = html`<h1>Home</h1><a href="/view/test1" @click=${click}>Test 1 [View]</a><a href="/edit/test 2" @click=${click}>Test 2 [Edit]</a>`
+      screen.template = html`<h1>Home</h1><a href="view" @click=${click}>[View]</a><br><a href="edit" @click=${click}>[Edit]</a>`
       break;
     case 'edit':
       screen.template = html`<h1><button @click=${back}>Back</button> Edit</h1><p>Edit ${state.id}</p>`;
@@ -37,7 +37,7 @@ function screenFactory(id, state) {
       screen.template = html`
         <h1><button @click=${back}>Back</button> ${state.id}</h1>
         <p>View ${state.id}</p>
-        <a @click=${click} href="/view/${state.id}/details">Details</a>`;
+        <a @click=${click} href="view-details">Details</a>`;
       break;
     case 'view-details':
       screen.template = html`<h1><button @click=${back}">Back</button>Details</button></h1>`;
@@ -49,49 +49,37 @@ function screenFactory(id, state) {
 
 function showScreen(id, state) {
   console.log('before', navigator.getState())
-  navigator.push(id, state);
+  navigator.push(id, state, {transition:ScreenTransition.SlideLeft})
+  .then(()=>{console.log('Push Done')})
   console.log('after', navigator.getState())
 }
 
 function click(event) {
   const url = event.currentTarget.href;
   console.log(url);
-  router.navigate(event.currentTarget.getAttribute('href'));
+  const id = event.currentTarget.getAttribute('href')
+  showScreen(id, {state:'test'});
   event.preventDefault();
 }
 
 function back() {
   if(navigator.previous)
-    navigator.back();
+    navigator.back().then(()=>console.log('Back Done'))
   else
-    navigator.set('home',{})
-  console.log('after', navigator.getState())
+    navigator.set('home',{}).then(()=>console.log('Back-Set Done'))
+
 }
 
-var navigator = new Navigation.Navigator();
+var navigator = document.createElement('wam-navigator');
 navigator.screenFactory = screenFactory;
 window.wamNavigator = navigator;
+document.body.appendChild(navigator);
 
 
-
-var router = new Navigo(null, true, '#!');
-router
-  .on('/', function(){
-    showScreen('home')
-  })
-  .on('/edit/:id', function(params){
-    showScreen('edit', {id:params.id});
-  })
-  .on('/view/:id', function(params){
-    showScreen('view', {id:params.id});
-  })
-  .on('/view/:id/details', function(params) {
-    showScreen('view-details', {id:params.id})
-  })
 
 function run() {
-    router.resolve();
-  }
+  navigator.set('home',{}).then(()=>console.log('Init'))
+}
 
 if('loading' == document.readyState) {
   window.addEventListener('DOMContentLoaded', run);

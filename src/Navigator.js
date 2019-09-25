@@ -1,6 +1,8 @@
 "use strict";
 import ScreenTransition from './ScreenTransition';
 import NavigationItem from './NavigationItem';
+import {LitElement, html, css, unsafeCSS} from 'lit-element';
+import style from './navigator.scss'
 
 
 
@@ -8,19 +10,32 @@ import NavigationItem from './NavigationItem';
  * @typedef NavigationEvent
  * @property {NavigationItem} from
  * @property {NavigationItem} to 
- * @property {ScreenTransition} transition
+ * @property {Navigator} controller
  */
 
 /**
  * 
  */
-export class Navigator{
+export class Navigator extends LitElement  {
   constructor() {
-    //super();
-    this._stack = [];
+    super();
+
     this.screenFactory = jsonScreenFactory;
-    this.root = document.body;
+    this._stack = [];
+    this.transitionName = '';
+    this.transitionTarget = '';
+    this.baseScreenId = '';
   }
+
+  static get properties() {
+    return { 
+      transitionName: {type: String},
+      transitionTarget: {type:String},
+      baseScreenId: {type: String}
+    };
+  }
+
+  static get styles() {return css`${unsafeCSS(style)}`;}
 
   static create() {
     return new Navigator();
@@ -41,6 +56,7 @@ export class Navigator{
   /**
    * @param {string} id
    * @param {object} state
+   * @param {object} [options]
    * @param {ScreenTransition} [options.transition]
    * @param {boolean} [options.keepAlive]
    * @return Promise<NavigationEvent>
@@ -50,6 +66,7 @@ export class Navigator{
 
     const from = this.current;
     this._stack.push(next);
+    next.frameId = this._stack.length;
     return this.animateIn(next, from);
   }
 
@@ -61,12 +78,13 @@ export class Navigator{
     while(this._stack.length) {
       const previous = this._stack.pop();
       if(previous.element && previous.element.parentElement)
-        this.root.removeChild(previous.element);
+        this.removeChild(previous.element);
     }
 
     this._stack.push(newScreen);
+    newScreen.frameId = this._stack.length;
 
-    this.animateIn(newScreen, this.current)
+    return this.animateIn(newScreen, this.previous)
   }
 
   /**
@@ -80,6 +98,7 @@ export class Navigator{
 
     const next = new NavigationItem(id,state,options);
     this._stack.push(next);
+    next.frameId = this._stack.length;
     return this.animateIn(next, previous)
   }
 
@@ -93,45 +112,7 @@ export class Navigator{
     const from = this._stack.pop();
     const to = this.current;
 
-    if('undefined' == typeof transition && from)
-      transition = -from.transition;
-
     return this.animateOut(from, to);
-  }
-
-  /**
-   * @param {NavigationItem} entering
-   * @param {NavigationItem} previous
-   * @return Promise<NavigationEvent>
-   */
-  animateIn(entering, previous) {
-    const newElement = entering.getElement(this.screenFactory); 
-    this.root.appendChild(newElement);
-
-    if (previous && ! entering.isOverlay && ! previous.keepAlive) {
-      const oldElement = previous.dehydrate();
-      if(oldElement && oldElement.parentElement)
-        this.root.removeChild(oldElement);
-    }
-
-    return Promise.resolve({previous,entering});
-  }
-
-  /**
-   * @param {NavigationItem} leaving
-   * @param {NavigationItem} next
-   * @return Promise<NavigationEvent>
-   */
-  animateOut(leaving, next) {
-      if ( ! leaving.keepAlive) {
-        const oldElement = leaving.dehydrate();
-        if(oldElement && oldElement.parentElement)
-          this.root.removeChild(oldElement);
-      }
-
-    this.root.appendChild(next.getElement(this.screenFactory));
-
-    return Promise.resolve({leaving, next});
   }
 
   getState() {
@@ -147,6 +128,116 @@ export class Navigator{
     
   }
 
+
+   /**
+   * @param {NavigationItem} entering
+   * @param {NavigationItem} previous
+   * @return Promise<NavigationEvent>
+   */
+  animateIn(entering, previous) {
+    if( ! entering)
+      return Promise.reject('Cannot animate in nothing');
+
+    const newElement = entering.getElement(this.screenFactory); 
+    newElement.setAttribute('slot', entering.frameId);
+    this.appendChild(newElement);
+
+    if(entering.transition == ScreenTransition.None) {
+      this.baseScreenId = entering.frameId;
+      return this.updateComplete
+      .then(()=>{
+        if(previous &&  ! previous.keepAlive)
+          this.removeElement(previous);
+
+        return {from:previous, to:entering, controller:this};
+      })
+    }
+
+    this.baseScreenId = previous ? previous.frameId : 'none';
+    this.transitionName = entering.transition.in;
+    this.transitionTarget = entering.frameId || 'none';
+    return this.updateComplete
+    .then(awaitAnimationFrame)
+    .then(awaitAnimationFrame)
+    .then(()=>new Promise((resolve,reject)=>{
+        this.transitionName = '';
+        this.afterTransition = resolve
+      }))
+    .then(()=>{
+      this.transitionTarget = '';
+      this.baseScreenId = entering.frameId;
+      return this.updateComplete;
+    })
+    .then(()=>{
+      if(previous &&  ! previous.keepAlive)
+        this.removeElement(previous);
+      return {from:previous, to:entering, controller:this}
+    });
+  }
+
+   /**
+   * @param {NavigationItem} leaving
+   * @param {NavigationItem} next
+   * @return Promise<NavigationEvent>
+   */
+  animateOut(leaving, next) {
+    if( ! leaving)
+      return Promise.reject('Cannot animate out nothing');
+
+    const nextScreen = next.getElement(this.screenFactory);
+    nextScreen.setAttribute('slot', next.frameId);
+    this.appendChild(nextScreen);
+
+    this.transitionTarget = leaving.frameId;
+    this.transitionName = '';
+    this.baseScreenId = next ? next.frameId : 'none';
+
+    return this.updateComplete
+    .then(awaitAnimationFrame)
+    .then(awaitAnimationFrame)
+    .then(()=>new Promise((resolve,reject)=>{
+        this.transitionName = leaving.transition.in;
+        this.afterTransition = resolve
+    }))
+    .then(()=>{
+      this.transitionTarget = '';
+      this.baseScreenId = next.frameId;
+      return this.updateComplete;
+    })
+    .then(()=>{
+      this.removeElement(leaving);
+      return {from:leaving, to:next, controller:this}
+    })
+  }
+
+  transitionEnd(e) {
+    if(this.afterTransition) {
+      this.afterTransition();
+      this.afterTransition = null;
+    }
+  }
+
+  removeElement(item) {
+    const element = item.dehydrate();
+    if(element && this == element.parentElement)
+      this.removeChild(element);
+  }
+
+  render() {
+    return html`
+      <div id="base" class="screen">
+        <slot name="${this.baseScreenId}"></slot>
+      </div>
+      ${this.transitionTarget ? 
+          html`<div id="motion" 
+                    class="screen ${this.transitionName}"
+                    @transitionend=${this.transitionEnd}
+                    @transitioncancel=${this.transitionEnd}>
+                <slot name="${this.transitionTarget}"></slot>
+              </div>`: 
+          html``
+      }`;
+  } 
 }
 window.customElements.define('wam-navigator', Navigator);
 
@@ -156,5 +247,8 @@ function jsonScreenFactory(id, state) {
   return {element:div, getState:function() {return state}};
 }
 
+function awaitAnimationFrame() {
+  return new Promise((resolve,reject)=>{window.requestAnimationFrame(resolve)});
+}
 
 export default Navigator;

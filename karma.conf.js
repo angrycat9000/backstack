@@ -10,6 +10,8 @@ module.exports = config => {
         dir:'dist/coverage'
       },
       esm: {
+        //coverage:true,
+        coverageExclude: ['dist/lit-element*.js'],
         nodeResolve: true
       }
     })
