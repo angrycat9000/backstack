@@ -1,5 +1,5 @@
 import {fixture, expect } from '@open-wc/testing';
-import {Navigator, ScreenTransition} from '../dist/webapp-navigation';
+import {ScreenTransition} from '../src/webapp-navigation';
 
 
 function screenFactory(id, state) {

@@ -1,10 +1,7 @@
 "use strict";
 import ScreenTransition from './ScreenTransition';
 import NavigationItem from './NavigationItem';
-import {LitElement, html, css, unsafeCSS} from 'lit-element';
-import style from './navigator.scss'
-
-
+import {LitElement, html, css} from 'lit-element';
 
 /**
  * @typedef NavigationEvent
@@ -33,12 +30,6 @@ export class Navigator extends LitElement  {
       transitionTarget: {type:String},
       baseScreenId: {type: String}
     };
-  }
-
-  static get styles() {return css`${unsafeCSS(style)}`;}
-
-  static create() {
-    return new Navigator();
   }
 
   /** @property {NavigationItem} */
@@ -238,6 +229,31 @@ export class Navigator extends LitElement  {
           html``
       }`;
   } 
+
+  static get styles() {return css`
+    :host {
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s, opacity 0.5s;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translate3d(0, 0, 0);
+      animation-fill-mode: forwards;
+    }
+    .slide-left {transform: translate3d(100%, 0, 0)}
+    .slide-right {transform: translate3d(-100%, 0, 0)}
+    .slide-up {transform:translate3d(0,100%,0)}
+    .slide-down {transform:translate3d(0,-100%,0)}
+    .zoom-in {transform:scale(0.01)}
+    .fade-in {opacity:0;}`;}
 }
 window.customElements.define('wam-navigator', Navigator);
 

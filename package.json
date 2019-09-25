@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "karma start --coverage",
-    "start": "rollup -w -c rollup.config.js & es-dev-server --app-index dist/index.html --node-resolve  --watch --open",
+    "start": "rollup -w -c rollup.config.js & es-dev-server --app-index example/index.html --node-resolve  --watch --open",
     "build": "rimraf dist && rollup -c rollup.config.js --configProduction"
   },
   "repository": {
@@ -19,13 +19,7 @@
   },
   "homepage": "https://github.com/angrycat9000/webapp-navigation#readme",
   "dependencies": {
-    "lit-element": "^2.2.1",
-    "lit-html": "^1.1.2",
-    "navigo": "^7.1.2",
-    "route-recognizer": "^0.3.4",
-    "router_js": "^6.2.5",
-    "rsvp": "^4.8.5",
-    "tiny-emitter": "^2.1.0"
+    "lit-element": "^2.2.1"
   },
   "devDependencies": {
     "@open-wc/testing": "^2.3.4",
@@ -33,6 +27,7 @@
     "cssnano": "^4.1.10",
     "es-dev-server": "^1.18.0",
     "postcss": "^7.0.18",
+    "rimraf": "^3.0.0",
     "rollup": "^1.21.4",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-index-html": "^1.5.4",

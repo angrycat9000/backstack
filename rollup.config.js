@@ -2,7 +2,6 @@
 import sass from 'rollup-plugin-sass'
 import resolve from 'rollup-plugin-node-resolve';
 import { terser } from "rollup-plugin-terser";
-import commonjs from 'rollup-plugin-commonjs'
 import cssnano from 'cssnano';
 import postcss from 'postcss';
 import indexHTML from 'rollup-plugin-index-html';
@@ -23,7 +22,6 @@ function getPlugins(isProd) {
   let plugins = [
     indexHTML(),
     resolve(),
-    commonjs(),
     sass(sassOptions),
   ];
 
@@ -57,11 +55,13 @@ function getPlugins(isProd) {
 }
 
 const config = {
-  input: './src/index.html',
+  input: './example/index.html',
   output: {
     dir: 'dist',
     format: 'esm',
     sourcemap: true,
+    inlineDynamicImports:true,
+    preserveModules:false
   },
 };
 

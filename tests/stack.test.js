@@ -1,5 +1,5 @@
-import { html, fixture, expect } from '@open-wc/testing';
-import {Navigator, ScreenTransition} from '../dist/webapp-navigation';
+import {fixture, expect } from '@open-wc/testing';
+import {Navigator, ScreenTransition} from '../src/webapp-navigation';
 
 describe('Stack', () => {  
   it('init empty', async ()=> {
