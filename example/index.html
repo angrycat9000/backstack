@@ -9,7 +9,28 @@
         body {
             font-family:sans-serif;
         }
-        h1 {margin-top:0;}
+        header {
+            display:flex;
+            align-items:center;
+            background:black;
+            color:white;
+        }
+        header {padding:0.125rem 1rem}
+        main {padding: 1rem;}
+        header a,
+        header a:visited {
+            margin-right:1rem;
+            margin-left:0.5rem;
+            color:white;
+        }
+        label{display:block; margin-bottom:1.5rem;}
+        label span { display:block; margin-bottom:0.5rem;}
+
+
+        h1 {margin:0;}
+
+
+
         wam-navigator {
             width:320px;
             height:480px;
@@ -26,6 +47,65 @@
 
 <body>
    
+    <template id="standard-nav">
+        <a href="nested" data-transition="">None</a> |
+        <a href="nested" data-transition="slide-left">Slide Left</a> |
+        <a href="nested" data-transition="slide-right">Slide Right</a> |
+        <a href="nested" data-transition="slide-up">Slide Up</a> |
+        <a href="nested" data-transition="slide-down">Slide Down</a> |
+        <a href="nested" data-transition="zoom-in">Zoom</a> |
+        <a href="nested" data-transition="fade-in">Fade</a> |
+    </template>
+
+    <template id="lorem-content">
+
+    </template>
+
+
+    <template id="home">
+        <header><h1>Home</h1></header>
+        <main data-binding="standardNav"></main>
+    </template>
+
+    <template id="nested">
+        <header>
+            <a data-back href="../">Back</a>
+            <h1 data-binding="title"></h1>
+        </header>
+        <main>
+        <p>This screen entered with the <span data-binding="transition"></span> tranistion.</p>
+        <h2>Custom Screen</h2>
+            <label>
+                <span>Title</span>
+                <input type="text" data-binding="customTitle"/>
+            </label>
+            
+            <label>
+                <span>Transition</span>
+                <select data-binding="customTransition">
+                    <option value="">None</option>
+                    <option value="slide-left">Slide Left</option>
+                    <option value=slide-right">Slide Right</option>
+                    <option value="slide-up">Slide Up</option>
+                    <option value="slide-down">Slide Down</option>
+                    <option value="zoom-in">Zoom</option>
+                    <option value="fade-in">Fade</option>
+                </select>
+            </label>
+
+            <button>Create Custom Screen</button>
+        </p>
+        <h2>Standard Screen</h2>
+        <div data-binding="standardNav"></div>
+        </main>
+    </template>
+
+    <template id="lorem-ipsum">
+        <header>
+            <a data-back href="../">Back</a>
+            <h1>Lorem Ipsum Screen</h1>
+        </header>
+    </template>
 </body>
 
 </html>

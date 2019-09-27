@@ -15,7 +15,7 @@ import ScreenTransition from './ScreenTransition';
 
  /**
  * @typedef Screen
- * @property {HTMLElement} element
+ * @property {Node} element
  * @property {getStateFunction} getState
  */
 
@@ -67,7 +67,7 @@ export class NavigationItem {
    * Get the currently hydrated element representing this screen, or hydrate
    * a new element
    * @param {screenFactoryFunction}
-   * @return {HTMLElement}
+   * @return {Node}
    */
   getElement(factory) {
     if ( ! this._element && factory) {
@@ -77,10 +77,16 @@ export class NavigationItem {
         throw new Error('screen factory did not return a value');
       if( 'function' != typeof r.getState)
         throw new Error('screen factory did not return an object with a getState function');
-      if( ! (r.element instanceof HTMLElement))
+      if( ! (r.element instanceof Node))
         throw new Error('screen factory did not return an object with an element property set to an HTMLElement object');
 
-      this._element = r.element;
+      if(r.element instanceof HTMLElement)
+        this._element = r.element;
+      else {
+        this._element = document.createElement('div');
+        this._element.appendChild(r.element)
+      }
+    
       this._stateFunc = r.getState;
       this._stateValue = null;
     }

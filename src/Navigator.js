@@ -247,12 +247,13 @@ export class Navigator extends LitElement  {
       left: 0;
       transform: translate3d(0, 0, 0);
       animation-fill-mode: forwards;
+      background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
     .slide-left {transform: translate3d(100%, 0, 0)}
     .slide-right {transform: translate3d(-100%, 0, 0)}
     .slide-up {transform:translate3d(0,100%,0)}
     .slide-down {transform:translate3d(0,-100%,0)}
-    .zoom-in {transform:scale(0.01)}
+    .zoom-in {transform:scale(0.01); opacity:0}
     .fade-in {opacity:0;}`;}
 }
 window.customElements.define('wam-navigator', Navigator);
