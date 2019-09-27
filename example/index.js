@@ -50,7 +50,7 @@ function setTemplateChild(instance, binding, value) {
   return el;
 }
 
-function setTemplateInput(instance, binding, prop, value) {
+function setTemplateInput(instance, binding, value) {
   const el = instance.querySelector(`[data-binding=${binding}]`);
   if(el && value)
     el.value = value;
@@ -66,8 +66,9 @@ function createScreenFromTemplate(id, state) {
   setTemplateString(instance, 'title', state.title);
   setTemplateString(instance, 'transition', state.transition);
   const customTitleBound = setTemplateInput(instance, 'customTitle', state.customTitle);
+  const customTransitionBound = setTemplateInput(instance, 'customTransition', state.customTransition)
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
-  const customTransitionBound = setTemplateInput(instance, 'customTransition', 'selectedValue', )
+  setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 2) );
 
   return {
     element:instance,

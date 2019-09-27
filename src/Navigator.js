@@ -258,6 +258,8 @@ export class Navigator extends LitElement  {
       left: 0;
       transform: translate3d(0, 0, 0);
       animation-fill-mode: forwards;
+      overflow-x:hidden;
+      overflow-y:auto;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
     .slide-left {transform: translate3d(100%, 0, 0)}
