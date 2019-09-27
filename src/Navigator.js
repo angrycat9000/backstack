@@ -179,6 +179,17 @@ export class Navigator extends LitElement  {
     nextScreen.setAttribute('slot', next.frameId);
     this.appendChild(nextScreen);
 
+    if(leaving.transition == ScreenTransition.None) {
+      this.baseScreenId = next.frameId;
+      return this.updateComplete
+      .then(()=>{
+        if(leaving &&  ! leaving.keepAlive)
+          this.removeElement(leaving);
+
+        return {from:leaving, to:next, controller:this};
+      })
+    }
+
     this.transitionTarget = leaving.frameId;
     this.transitionName = '';
     this.baseScreenId = next ? next.frameId : 'none';

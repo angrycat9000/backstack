@@ -8,10 +8,11 @@ function screenFactory(id, state) {
   return {element:div, getState:function(){return state}}
 }
 
-describe('Shadow DOM', () => {  
+describe('DOM', () => {  
   it('init', async ()=> {
     const nav = (await fixture('<wam-navigator></wam-navigator>'));
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name=""></slot></div>')
+    expect(nav).lightDom.to.equal('');
   });
 
   it('set none', async ()=> {
@@ -74,6 +75,17 @@ describe('Shadow DOM', () => {
     nav.screenFactory = screenFactory
     await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
     await nav.push('test', {data:6}, {transition:ScreenTransition.SlideLeft});
+    await nav.back();
+    expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
+    expect(nav).lightDom.to.equal('<div slot="1">mine</div>')
+    expect(nav._stack.length).to.equal(1);
+  });
+
+  it('back without transition', async ()=> {
+    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    nav.screenFactory = screenFactory
+    await nav.push('mine', {data:7}, {transition:ScreenTransition.None});
+    await nav.push('test', {data:6}, {transition:ScreenTransition.None});
     await nav.back();
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
     expect(nav).lightDom.to.equal('<div slot="1">mine</div>')
