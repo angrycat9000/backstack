@@ -38,11 +38,18 @@ export class Navigator extends LitElement  {
     return length > 0 ? this._stack[length - 1] : null;
   }
 
-  get screenScrollTop() {
-    return this.shadowRoot.getElementById('base').scrollTop;
+  getViewportScroll(frameId) {
+    const frame = this.shadowRoot.querySelector(`slot[name="${frameId}"]`);
+    if( ! frame)
+      throw new Error(`Cannot find frame with id = "${frameId}"`);
+    return {x:frame.parentElement.scrollLeft, y:frame.parentElement.scrollTop}
   }
-  set screenScrollTop(value) {
-    this.shadowRoot.getElementById('base').scrollTop = value;
+  setViewportScroll(frameId, value) {
+    const frame = this.shadowRoot.querySelector(`slot[name="${frameId}"]`);
+    if( ! frame)
+      throw new Error(`Cannot find frame with id = "${frameId}"`);
+    frame.parentElement.scrollLeft = value && value.x ? value.x : 0;
+    frame.parentElement.scrollTop =  value && value.y ? value.y : 0;
   }
 
   /** @property {NavigationItem} */  
@@ -60,7 +67,7 @@ export class Navigator extends LitElement  {
    * @return Promise<NavigationEvent>
    */
   push(id, state, options) {
-    const next = new NavigationItem(id, state, options);
+    const next = new NavigationItem(this, id, state, options);
 
     const from = this.current;
     this._stack.push(next);
@@ -72,7 +79,7 @@ export class Navigator extends LitElement  {
    * 
    */
   set(id, state, options) {
-    const newScreen = new NavigationItem(id,state,options);
+    const newScreen = new NavigationItem(this, id,state,options);
     const previous = this.current;
     for(let i = 0; i < this._stack.length -1; i++) {
       const item = this._stack[i];
@@ -95,7 +102,7 @@ export class Navigator extends LitElement  {
     
     const previous = this._stack.pop();
 
-    const next = new NavigationItem(id,state,options);
+    const next = new NavigationItem(this, id,state,options);
     this._stack.push(next);
     next.frameId = this._stack.length;
     return this.animateIn(next, previous)
@@ -119,6 +126,7 @@ export class Navigator extends LitElement  {
       state: item.getState(),
       id: item.id,
       transition: item.transition,
+      viewportScroll: item.viewportScroll
     }});
   }
 
@@ -139,7 +147,6 @@ export class Navigator extends LitElement  {
     if(previous)
       previous.preserveState();
 
-
     if(entering.transition == ScreenTransition.None) {
       this.baseScreenId = entering.frameId;
       return this.updateComplete
@@ -158,6 +165,8 @@ export class Navigator extends LitElement  {
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
+      if(previous)
+        this.setViewportScroll(previous.frameId, previous.viewportScroll);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -172,6 +181,7 @@ export class Navigator extends LitElement  {
     .then(()=>{
       if(previous)
         previous.dehydrate();
+      this.setViewportScroll(entering.frameId, entering.viewportScroll);
       return {from:previous, to:entering, controller:this}
     });
   }
@@ -191,9 +201,9 @@ export class Navigator extends LitElement  {
       this.baseScreenId = next.frameId;
       return this.updateComplete
       .then(()=>{
-        next.hydrate(this);
-        if(leaving)
-          leaving.dehydrate();
+        if(next)
+          next.hydrate(this);
+        leaving.dehydrate();
         return {from:leaving, to:next, controller:this};
       })
     }
@@ -201,10 +211,10 @@ export class Navigator extends LitElement  {
     this.transitionTarget = leaving.frameId;
     this.transitionName = '';
     this.baseScreenId = next ? next.frameId : 'none';
-
     return this.updateComplete
     .then(()=>{
-      next.hydrate(this)
+      if(next)
+        next.hydrate(this);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -262,7 +272,7 @@ export class Navigator extends LitElement  {
       left: 0;
       transform: translate3d(0, 0, 0);
       animation-fill-mode: forwards;
-      overflow:hidden;
+      overflow: auto;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
     .slide-left {transform: translate3d(100%, 0, 0)}

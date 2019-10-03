@@ -69,13 +69,12 @@ function createScreenFromTemplate(id, state, container) {
   const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextitle);
   const nextTransitionBound = setTemplateInput(instance, 'nextTransition', state.nextTransition)
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
-  setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 2) );
+  setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 1) );
 
-  container.className = 'screen-wrapper';
   container.appendChild(instance);
 
-  if(state.scroll)
-    container.scrollTop = state.scroll;
+  //if(state.scroll)
+  //  container.scrollTop = state.scroll;
 
   return {
     getState:function() {
@@ -84,7 +83,6 @@ function createScreenFromTemplate(id, state, container) {
         transition: state.transition,
         nextTitle: nextTitleBound ? nextTitleBound.value : '',
         nextTransition: nextTransitionBound ? nextTransitionBound.value : '',
-        scroll: container.scrollTop
       }
     }
   }
@@ -97,7 +95,6 @@ function run() {
   navigator = document.getElementById('screen');
   navigator.screenFactory = createScreenFromTemplate;
   window.wamNavigator = navigator;
-  //document.body.appendChild(navigator);
 
   navigator.set('home',{}).then(()=>console.log('Init'))  
 }

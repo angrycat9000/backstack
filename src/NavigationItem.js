@@ -30,27 +30,30 @@ import ScreenTransition from './ScreenTransition';
  */
 export class NavigationItem {
   /**
+   * @param {Navigator} parent
    * @param {string} id
    * @param {getStateFunction} getState,
    * @param {HTMLElement} [element]
    */
-  constructor(id, state, options) {
+  constructor(parent, id, state, options,) {
     options = {
       transition: ScreenTransition.None,
+      viewportScroll: {x:0, y:0},
       ...options
     }
 
     /** @property {string} */
     this.id = id;
+
+    
+
+    this.parent = parent;
     this._stateValue = state;
     this._hydrated = null;
     this._element = null;
 
-    /** @property {boolean} */
-    this.keepAlive = options.keepAlive;
-
-    /** @property {boolean} */
-    //this.isOverlay = options.isOverlay;
+    /** @property {object} */
+    this.viewportScroll = options.viewportScroll;
 
     /** @property {ScreenTransition} */
     this.transition = options.transition;
@@ -61,33 +64,39 @@ export class NavigationItem {
   }
 
   getState() {
-    return this.isHydrated  && this._hydrated.getState ? this._hydrated.getState() : this._stateValue;
+    if( ! this.isHydrated  || ! this._hydrated.getState) 
+      return this._stateValue; 
+  
+    const s = this._hydrated.getState() || {};
+    return s;
   }
 
   preserveState() {
     this._stateValue = this.getState();
+    this.viewportScroll = this.parent.getViewportScroll(this.frameId);
   }
 
   /**
    * Get the currently hydrated element representing this screen, or hydrate
    * a new element
-   * @param {Navigator} parent
    * @return {HTMLElement}
    */
-  hydrate(parent) {
-    if (this._hydrated || ! parent || !parent.screenFactory) 
+  hydrate() {
+    if (this._hydrated || ! this.parent.screenFactory) 
       return this._element;
 
     this._element = document.createElement('div');
     this._element.setAttribute('slot', this.frameId);
-    parent.appendChild(this._element);
+    this.parent.appendChild(this._element);
 
-    const r  = parent.screenFactory(this.id, this._stateValue, this._element);
+    const r  = this.parent.screenFactory(this.id, this._stateValue, this._element);
 
     if( ! r)
       throw new Error('screen factory did not return a value');
     if( 'function' != typeof r.getState)
       throw new Error('screen factory did not return an object with a getState function');
+
+    this.parent.setViewportScroll(this.frameId, this.viewportScroll);
 
     this._hydrated = r;
     this._stateValue = null;

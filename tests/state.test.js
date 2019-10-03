@@ -15,7 +15,8 @@ describe('State', () => {
     expect(state[0]).to.eql({
       id:'item1',
       state:{data:1},
-      transition: ScreenTransition.None
+      transition: ScreenTransition.None,
+      viewportScroll: {x:0, y:;0}
     })
   }) 
 });
