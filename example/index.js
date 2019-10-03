@@ -58,10 +58,11 @@ function setTemplateInput(instance, binding, value) {
   return el;
 }
 
-function createScreenFromTemplate(id, state) {
+function createScreenFromTemplate(id, state, container) {
   const template = document.getElementById(id);
   const instance = document.importNode(template.content, true);
   const standard = document.getElementById('standard-nav');
+
 
   setTemplateString(instance, 'title', state.title);
   setTemplateString(instance, 'transition', state.transition);
@@ -70,14 +71,20 @@ function createScreenFromTemplate(id, state) {
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
   setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 2) );
 
+  container.className = 'screen-wrapper';
+  container.appendChild(instance);
+
+  if(state.scroll)
+    container.scrollTop = state.scroll;
+
   return {
-    element:instance,
     getState:function() {
       return {
         title: state.title,
         transition: state.transition,
         nextTitle: nextTitleBound ? nextTitleBound.value : '',
-        nextTransition: nextTransitionBound ? nextTransitionBound.value : ''
+        nextTransition: nextTransitionBound ? nextTransitionBound.value : '',
+        scroll: container.scrollTop
       }
     }
   }

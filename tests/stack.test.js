@@ -14,12 +14,9 @@ describe('Stack', () => {
     const nav = (await fixture('<wam-navigator></wam-navigator>'));
     expect(nav).to.be.instanceOf(Navigator);
     await nav.push(testId, {data:1});
-    //expect(nav.current.id).to.equal('testid');
     const item = nav.current;
     expect(item.id).to.equal(testId)
     expect(item.transition).to.equal(ScreenTransition.None);
-    expect(item.keepAlive).to.be.false;
-    //expect(nav.current.isOverlay).to.be.false;
   });
   it('set', async()=>{
     const nav = (await fixture('<wam-navigator></wam-navigator>'));

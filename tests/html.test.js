@@ -2,10 +2,9 @@ import {fixture, expect } from '@open-wc/testing';
 import {ScreenTransition} from '../src/webapp-navigation';
 
 
-function screenFactory(id, state) {
-  const div = document.createElement('div');
-  div.innerHTML = id;
-  return {element:div, getState:function(){return state}}
+function screenFactory(id, state, container) {
+  container.innerHTML = id;
+  return {getState:function(){return state}}
 }
 
 describe('DOM', () => {  
@@ -91,4 +90,30 @@ describe('DOM', () => {
     expect(nav).lightDom.to.equal('<div slot="1">mine</div>')
     expect(nav._stack.length).to.equal(1);
   });
+
+  it('hydrate twice', async()=>{
+    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const item = (await nav.push('item1', {data:1})).to
+    const element = nav.firstElementChild;
+    const element2 = item.hydrate(nav);
+    expect(element).to.be.equal(element2);
+    expect(nav.children.length).to.be.equal(1);
+  });
+
+  it('dehydrate calls disconnect', async()=>{
+    var disconnected = false;
+    const myScreenFactory = function(a,b,c) {
+      const r = screenFactory(a,b,c);
+      r.disconnect = function(){disconnected = true}
+      return r;
+    };
+
+    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    nav.screenFactory = myScreenFactory;
+    await nav.push('item1', {data:1});
+    await nav.push('item2', {data:1});
+    await nav.back();
+
+    expect(disconnected).to.be.true;
+  })
 })

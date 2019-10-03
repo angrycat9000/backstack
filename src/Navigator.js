@@ -38,6 +38,13 @@ export class Navigator extends LitElement  {
     return length > 0 ? this._stack[length - 1] : null;
   }
 
+  get screenScrollTop() {
+    return this.shadowRoot.getElementById('base').scrollTop;
+  }
+  set screenScrollTop(value) {
+    this.shadowRoot.getElementById('base').scrollTop = value;
+  }
+
   /** @property {NavigationItem} */  
   get previous() {
     const length = this._stack.length;
@@ -66,16 +73,17 @@ export class Navigator extends LitElement  {
    */
   set(id, state, options) {
     const newScreen = new NavigationItem(id,state,options);
-    while(this._stack.length) {
-      const previous = this._stack.pop();
-      if(previous.element && previous.element.parentElement)
-        this.removeChild(previous.element);
+    const previous = this.current;
+    for(let i = 0; i < this._stack.length -1; i++) {
+      const item = this._stack[i];
+      item.keepAlive = false;
+      item.dehydrate();
     }
 
-    this._stack.push(newScreen);
+    this._stack = [newScreen];
     newScreen.frameId = this._stack.length;
 
-    return this.animateIn(newScreen, this.previous)
+    return this.animateIn(newScreen, previous)
   }
 
   /**
@@ -111,7 +119,6 @@ export class Navigator extends LitElement  {
       state: item.getState(),
       id: item.id,
       transition: item.transition,
-      keepAlive: item.keepAlive,
     }});
   }
 
@@ -129,16 +136,17 @@ export class Navigator extends LitElement  {
     if( ! entering)
       return Promise.reject('Cannot animate in nothing');
 
-    const newElement = entering.getElement(this.screenFactory); 
-    newElement.setAttribute('slot', entering.frameId);
-    this.appendChild(newElement);
+    if(previous)
+      previous.preserveState();
+
 
     if(entering.transition == ScreenTransition.None) {
       this.baseScreenId = entering.frameId;
       return this.updateComplete
       .then(()=>{
-        if(previous &&  ! previous.keepAlive)
-          this.removeElement(previous);
+        entering.hydrate(this);
+        if(previous)
+          previous.dehydrate();
 
         return {from:previous, to:entering, controller:this};
       })
@@ -148,7 +156,9 @@ export class Navigator extends LitElement  {
     this.transitionName = entering.transition;
     this.transitionTarget = entering.frameId || 'none';
     return this.updateComplete
-    .then(awaitAnimationFrame)
+    .then(()=>{
+      entering.hydrate(this);
+      return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
         this.transitionName = '';
@@ -160,8 +170,8 @@ export class Navigator extends LitElement  {
       return this.updateComplete;
     })
     .then(()=>{
-      if(previous &&  ! previous.keepAlive)
-        this.removeElement(previous);
+      if(previous)
+        previous.dehydrate();
       return {from:previous, to:entering, controller:this}
     });
   }
@@ -175,17 +185,15 @@ export class Navigator extends LitElement  {
     if( ! leaving)
       return Promise.reject('Cannot animate out nothing');
 
-    const nextScreen = next.getElement(this.screenFactory);
-    nextScreen.setAttribute('slot', next.frameId);
-    this.appendChild(nextScreen);
+    leaving.preserveState();
 
     if(leaving.transition == ScreenTransition.None) {
       this.baseScreenId = next.frameId;
       return this.updateComplete
       .then(()=>{
-        if(leaving &&  ! leaving.keepAlive)
-          this.removeElement(leaving);
-
+        next.hydrate(this);
+        if(leaving)
+          leaving.dehydrate();
         return {from:leaving, to:next, controller:this};
       })
     }
@@ -195,7 +203,9 @@ export class Navigator extends LitElement  {
     this.baseScreenId = next ? next.frameId : 'none';
 
     return this.updateComplete
-    .then(awaitAnimationFrame)
+    .then(()=>{
+      next.hydrate(this)
+      return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
         this.transitionName = leaving.transition;
@@ -207,7 +217,7 @@ export class Navigator extends LitElement  {
       return this.updateComplete;
     })
     .then(()=>{
-      this.removeElement(leaving);
+      leaving.dehydrate();
       return {from:leaving, to:next, controller:this}
     })
   }
@@ -217,12 +227,6 @@ export class Navigator extends LitElement  {
       this.afterTransition();
       this.afterTransition = null;
     }
-  }
-
-  removeElement(item) {
-    const element = item.dehydrate();
-    if(element && this == element.parentElement)
-      this.removeChild(element);
   }
 
   render() {
@@ -258,8 +262,7 @@ export class Navigator extends LitElement  {
       left: 0;
       transform: translate3d(0, 0, 0);
       animation-fill-mode: forwards;
-      overflow-x:hidden;
-      overflow-y:auto;
+      overflow:hidden;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
     .slide-left {transform: translate3d(100%, 0, 0)}

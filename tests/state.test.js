@@ -15,8 +15,7 @@ describe('State', () => {
     expect(state[0]).to.eql({
       id:'item1',
       state:{data:1},
-      keepAlive:false,
       transition: ScreenTransition.None
     })
-  })
+  }) 
 });

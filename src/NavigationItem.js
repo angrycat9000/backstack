@@ -5,6 +5,7 @@ import ScreenTransition from './ScreenTransition';
  * @typedef screenFactoryFunction
  * @param {string} id
  * @param {object} state
+ * @param {HTMLElement} container Element to populate with contests of screen represented by id in state
  * @return {Screen}
  */
 
@@ -14,9 +15,14 @@ import ScreenTransition from './ScreenTransition';
  */
 
  /**
+  * @typedef disconnectFunction
+  * @param {HTMLElement} container Same container that was passed to the screenFactoryFunction
+  */
+
+ /**
  * @typedef Screen
- * @property {Node} element
  * @property {getStateFunction} getState
+ * @property {function} disconnect
  */
 
 /**
@@ -30,18 +36,15 @@ export class NavigationItem {
    */
   constructor(id, state, options) {
     options = {
-      keepAlive:false,
-      //isOverlay: false,
       transition: ScreenTransition.None,
-      element:null,
       ...options
     }
 
     /** @property {string} */
     this.id = id;
     this._stateValue = state;
+    this._hydrated = null;
     this._element = null;
-    this._stateFunc = null;
 
     /** @property {boolean} */
     this.keepAlive = options.keepAlive;
@@ -54,54 +57,56 @@ export class NavigationItem {
   }
 
   get isHydrated() {
-    return null != this._element
+    return null != this._hydrated;
   }
 
-  get element() {return this._element}
-
   getState() {
-    return this.isHydrated ? (this._stateFunc && this._stateFunc()) : this._stateValue;
+    return this.isHydrated  && this._hydrated.getState ? this._hydrated.getState() : this._stateValue;
+  }
+
+  preserveState() {
+    this._stateValue = this.getState();
   }
 
   /**
    * Get the currently hydrated element representing this screen, or hydrate
    * a new element
-   * @param {screenFactoryFunction}
-   * @return {Node}
+   * @param {Navigator} parent
+   * @return {HTMLElement}
    */
-  getElement(factory) {
-    if ( ! this._element && factory) {
-      const r = factory(this.id, this._stateValue);
+  hydrate(parent) {
+    if (this._hydrated || ! parent || !parent.screenFactory) 
+      return this._element;
 
-      if( !r)
-        throw new Error('screen factory did not return a value');
-      if( 'function' != typeof r.getState)
-        throw new Error('screen factory did not return an object with a getState function');
-      if( ! (r.element instanceof Node))
-        throw new Error('screen factory did not return an object with an element property set to an HTMLElement object');
+    this._element = document.createElement('div');
+    this._element.setAttribute('slot', this.frameId);
+    parent.appendChild(this._element);
 
-      if(r.element instanceof HTMLElement)
-        this._element = r.element;
-      else {
-        this._element = document.createElement('div');
-        this._element.appendChild(r.element)
-      }
-    
-      this._stateFunc = r.getState;
-      this._stateValue = null;
-    }
-    return this._element;
+    const r  = parent.screenFactory(this.id, this._stateValue, this._element);
+
+    if( ! r)
+      throw new Error('screen factory did not return a value');
+    if( 'function' != typeof r.getState)
+      throw new Error('screen factory did not return an object with a getState function');
+
+    this._hydrated = r;
+    this._stateValue = null;
   }
 
   /**
-   * @return {HTMLElement|null} previously hydrated element or none
+   * 
    */
   dehydrate() {
-    const element = this._element;
-    this._stateValue = this.getState();
-    this._stateFunc = null;
+    if(null == this._hydrated)
+      return;
+
+    if('function' == typeof this._hydrated.disconnect)
+      this._hydrated.disconnect(this._element)
+
+    this._element.parentElement.removeChild(this._element);
+
+    this._hydrated = null;
     this._element = null;
-    return element;
   }
 }
 
