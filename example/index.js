@@ -17,19 +17,19 @@ function click(event) {
     const state =  {
       title:element.innerHTML, 
       transition:transition,
-      customTitle: '',
-      customTransition: ''
+      nextTitle: '',
+      nextTransition: ''
     };
     navigator.push(id, state, {transition:transition})
   }  else {
     const myState = navigator.current.getState();
     const nextState = {
-      title: myState.customTitle || '(none provided)',
-      transition: myState.customTransition || '',
-      customTitle:'',
-      customTransition:''
+      title: myState.nextTitle || '(none provided)',
+      transition: myState.nextTransition || '',
+      nextTitle:'',
+      nextTransition:''
     };
-    navigator.push('nested', nextState, {transition:myState.customTransition})
+    navigator.push('nested', nextState, {transition:myState.nextTransition})
   }
 
   event.preventDefault();
@@ -65,8 +65,8 @@ function createScreenFromTemplate(id, state) {
 
   setTemplateString(instance, 'title', state.title);
   setTemplateString(instance, 'transition', state.transition);
-  const customTitleBound = setTemplateInput(instance, 'customTitle', state.customTitle);
-  const customTransitionBound = setTemplateInput(instance, 'customTransition', state.customTransition)
+  const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextitle);
+  const nextTransitionBound = setTemplateInput(instance, 'nextTransition', state.nextTransition)
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
   setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 2) );
 
@@ -76,8 +76,8 @@ function createScreenFromTemplate(id, state) {
       return {
         title: state.title,
         transition: state.transition,
-        customTitle: customTitleBound ? customTitleBound.value : '',
-        customTransition: customTransitionBound ? customTransitionBound.value : ''
+        nextTitle: nextTitleBound ? nextTitleBound.value : '',
+        nextTransition: nextTransitionBound ? nextTransitionBound.value : ''
       }
     }
   }
@@ -87,10 +87,10 @@ var navigator;
 function run() {
   document.addEventListener('click', click);
 
-  navigator = document.createElement('wam-navigator');
+  navigator = document.getElementById('screen');
   navigator.screenFactory = createScreenFromTemplate;
   window.wamNavigator = navigator;
-  document.body.appendChild(navigator);
+  //document.body.appendChild(navigator);
 
   navigator.set('home',{}).then(()=>console.log('Init'))  
 }
