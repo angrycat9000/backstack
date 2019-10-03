@@ -1,6 +1,3 @@
-import { ScreenTransition } from '../src/webapp-navigation';
-
-
 function click(event) {
   let element = event.target;
   while(element && element.tagName != 'A' && element.tagName != 'BUTTON') {

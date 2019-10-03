@@ -30,7 +30,7 @@ import ScreenTransition from './ScreenTransition';
  */
 export class NavigationItem {
   /**
-   * @param {Navigator} parent
+   * @param {ScreenStack} parent
    * @param {string} id
    * @param {getStateFunction} getState,
    * @param {HTMLElement} [element]
@@ -73,7 +73,7 @@ export class NavigationItem {
 
   preserveState() {
     this._stateValue = this.getState();
-    this.viewportScroll = this.parent.getViewportScroll(this.frameId);
+    this.viewportScroll = this.parent.getViewportScroll(this.viewportId);
   }
 
   /**
@@ -86,7 +86,7 @@ export class NavigationItem {
       return this._element;
 
     this._element = document.createElement('div');
-    this._element.setAttribute('slot', this.frameId);
+    this._element.setAttribute('slot', this.viewportId);
     this.parent.appendChild(this._element);
 
     const r  = this.parent.screenFactory(this.id, this._stateValue, this._element);
@@ -96,7 +96,7 @@ export class NavigationItem {
     if( 'function' != typeof r.getState)
       throw new Error('screen factory did not return an object with a getState function');
 
-    this.parent.setViewportScroll(this.frameId, this.viewportScroll);
+    this.parent.setViewportScroll(this.viewportId, this.viewportScroll);
 
     this._hydrated = r;
     this._stateValue = null;

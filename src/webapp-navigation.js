@@ -1,11 +1,11 @@
-import Navigator from './Navigator';
+import ScreenStack from './ScreenStack';
 import ScreenTransition from './ScreenTransition'
 
 const Navigation = {
-  Navigator,
+  ScreenStack,
   ScreenTransition
 };
 
-export {Navigator, ScreenTransition}
+export {ScreenStack, ScreenTransition}
 
 export default Navigation;

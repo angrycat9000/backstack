@@ -7,13 +7,13 @@ import {LitElement, html, css} from 'lit-element';
  * @typedef NavigationEvent
  * @property {NavigationItem} from
  * @property {NavigationItem} to 
- * @property {Navigator} controller
+ * @property {ScreenStack} controller
  */
 
 /**
  * 
  */
-export class Navigator extends LitElement  {
+export class ScreenStack extends LitElement  {
   constructor() {
     super();
 
@@ -42,16 +42,16 @@ export class Navigator extends LitElement  {
     return length > 0 ? this._stack[length - 1] : null;
   }
 
-  getViewportScroll(frameId) {
-    const frame = this.shadowRoot.querySelector(`slot[name="${frameId}"]`);
+  getViewportScroll(viewportId) {
+    const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
     if( ! frame)
-      throw new Error(`Cannot find frame with id = "${frameId}"`);
+      throw new Error(`Cannot find viewport with id = "${viewportId}"`);
     return {x:frame.parentElement.scrollLeft, y:frame.parentElement.scrollTop}
   }
-  setViewportScroll(frameId, value) {
-    const frame = this.shadowRoot.querySelector(`slot[name="${frameId}"]`);
+  setViewportScroll(viewportId, value) {
+    const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
     if( ! frame)
-      throw new Error(`Cannot find frame with id = "${frameId}"`);
+      throw new Error(`Cannot find viewport with id = "${viewportId}"`);
     frame.parentElement.scrollLeft = value && value.x ? value.x : 0;
     frame.parentElement.scrollTop =  value && value.y ? value.y : 0;
   }
@@ -75,7 +75,7 @@ export class Navigator extends LitElement  {
 
     const from = this.current;
     this._stack.push(next);
-    next.frameId = this._stack.length;
+    next.viewportId = this._stack.length;
     return this.animateIn(next, from);
   }
 
@@ -91,7 +91,7 @@ export class Navigator extends LitElement  {
     }
 
     this._stack = [newScreen];
-    newScreen.frameId = this._stack.length;
+    newScreen.viewportId = this._stack.length;
 
     return this.animateIn(newScreen, previous)
   }
@@ -107,7 +107,7 @@ export class Navigator extends LitElement  {
 
     const next = new NavigationItem(this, id,state,options);
     this._stack.push(next);
-    next.frameId = this._stack.length;
+    next.viewportId = this._stack.length;
     return this.animateIn(next, previous)
   }
 
@@ -151,7 +151,7 @@ export class Navigator extends LitElement  {
     this._stack = state.stack.map((item,i) => {
       const options = {transition:item.transition, viewportScroll: item.viewportScroll}
       const ni = new NavigationItem(this, item.id, item.state, options);
-      ni.frameId = i+1;
+      ni.viewportId = i+1;
       return ni;
     });
 
@@ -179,7 +179,7 @@ export class Navigator extends LitElement  {
       previous.preserveState();
 
     if(entering.transition == ScreenTransition.None) {
-      this.baseScreenId = entering.frameId;
+      this.baseScreenId = entering.viewportId;
       return this.updateComplete
       .then(()=>{
         entering.hydrate(this);
@@ -190,14 +190,14 @@ export class Navigator extends LitElement  {
       })
     }
 
-    this.baseScreenId = previous ? previous.frameId : 'none';
+    this.baseScreenId = previous ? previous.viewportId : 'none';
     this.transitionName = entering.transition;
-    this.transitionTarget = entering.frameId || 'none';
+    this.transitionTarget = entering.viewportId || 'none';
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
       if(previous)
-        this.setViewportScroll(previous.frameId, previous.viewportScroll);
+        this.setViewportScroll(previous.viewportId, previous.viewportScroll);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -206,13 +206,13 @@ export class Navigator extends LitElement  {
       }))
     .then(()=>{
       this.transitionTarget = '';
-      this.baseScreenId = entering.frameId;
+      this.baseScreenId = entering.viewportId;
       return this.updateComplete;
     })
     .then(()=>{
       if(previous)
         previous.dehydrate();
-      this.setViewportScroll(entering.frameId, entering.viewportScroll);
+      this.setViewportScroll(entering.viewportId, entering.viewportScroll);
       return {from:previous, to:entering, controller:this}
     });
   }
@@ -229,7 +229,7 @@ export class Navigator extends LitElement  {
     leaving.preserveState();
 
     if(leaving.transition == ScreenTransition.None) {
-      this.baseScreenId = next.frameId;
+      this.baseScreenId = next.viewportId;
       return this.updateComplete
       .then(()=>{
         if(next)
@@ -239,9 +239,9 @@ export class Navigator extends LitElement  {
       })
     }
 
-    this.transitionTarget = leaving.frameId;
+    this.transitionTarget = leaving.viewportId;
     this.transitionName = '';
-    this.baseScreenId = next ? next.frameId : 'none';
+    this.baseScreenId = next ? next.viewportId : 'none';
     return this.updateComplete
     .then(()=>{
       if(next)
@@ -254,7 +254,7 @@ export class Navigator extends LitElement  {
     }))
     .then(()=>{
       this.transitionTarget = '';
-      this.baseScreenId = next.frameId;
+      this.baseScreenId = next.viewportId;
       return this.updateComplete;
     })
     .then(()=>{
@@ -313,7 +313,7 @@ export class Navigator extends LitElement  {
     .zoom-in {transform:scale(0.01); opacity:0}
     .fade-in {opacity:0;}`;}
 }
-window.customElements.define('wam-navigator', Navigator);
+window.customElements.define('wam-screenstack', ScreenStack);
 
 function jsonScreenFactory(id, state) {
   const div = document.createElement('div');
@@ -325,4 +325,4 @@ function awaitAnimationFrame() {
   return new Promise((resolve,reject)=>{window.requestAnimationFrame(resolve)});
 }
 
-export default Navigator;
+export default ScreenStack;

@@ -9,13 +9,13 @@ function screenFactory(id, state, container) {
 
 describe('DOM', () => {  
   it('init', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name=""></slot></div>')
     expect(nav).lightDom.to.equal('');
   });
 
   it('set none', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.set('mine', {data:7});
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
@@ -23,7 +23,7 @@ describe('DOM', () => {
   });
 
   it('set with 2', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.push('x1', {data:4}, {transition:ScreenTransition.SlideLeft});
     await nav.push('x2', {data:5}, {transition:ScreenTransition.SlideLeft});
@@ -34,7 +34,7 @@ describe('DOM', () => {
   });
 
   it('push from empty', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
@@ -42,7 +42,7 @@ describe('DOM', () => {
   });
 
   it('push from 1', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.set('test', {data:6}, {transition:ScreenTransition.SlideLeft});
     await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
@@ -51,7 +51,7 @@ describe('DOM', () => {
     expect(nav._stack.length).to.equal(2);
   });
   it('replace from empty', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.replace('mine', {data:7});
     expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
@@ -60,7 +60,7 @@ describe('DOM', () => {
 
 
   it('replace from 1', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.set('test', {data:6}, {transition:ScreenTransition.SlideLeft});
     await nav.replace('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
@@ -70,7 +70,7 @@ describe('DOM', () => {
   });
 
   it('back from 1', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
     await nav.push('test', {data:6}, {transition:ScreenTransition.SlideLeft});
@@ -81,7 +81,7 @@ describe('DOM', () => {
   });
 
   it('back without transition', async ()=> {
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = screenFactory
     await nav.push('mine', {data:7}, {transition:ScreenTransition.None});
     await nav.push('test', {data:6}, {transition:ScreenTransition.None});
@@ -92,7 +92,7 @@ describe('DOM', () => {
   });
 
   it('hydrate twice returns same element', async()=>{
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     const item = (await nav.push('item1', {data:1})).to
     const element = nav.firstElementChild;
     const element2 = item.hydrate(nav);
@@ -108,7 +108,7 @@ describe('DOM', () => {
       return r;
     };
 
-    const nav = (await fixture('<wam-navigator></wam-navigator>'));
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
     nav.screenFactory = myScreenFactory;
     await nav.push('item1', {data:1});
     await nav.push('item2', {data:1});
