@@ -35,9 +35,9 @@ export class NavigationItem {
    * @param {getStateFunction} getState,
    * @param {HTMLElement} [element]
    */
-  constructor(parent, id, state, options,) {
+  constructor(parent, id, state, options) {
     options = {
-      transition: ScreenTransition.None,
+      transition: parent.transition,
       viewportScroll: {x:0, y:0},
       ...options
     }

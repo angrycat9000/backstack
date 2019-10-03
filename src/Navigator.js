@@ -22,13 +22,17 @@ export class Navigator extends LitElement  {
     this.transitionName = '';
     this.transitionTarget = '';
     this.baseScreenId = '';
+
+    /** @property {ScreenTransition} transition Transition to use if not specified*/
+    this.transition = ScreenTransition.None;
   }
 
   static get properties() {
     return { 
       transitionName: {type: String},
       transitionTarget: {type:String},
-      baseScreenId: {type: String}
+      baseScreenId: {type: String},
+      transition: {type:String, attribute:"transition"}
     };
   }
 
@@ -83,7 +87,6 @@ export class Navigator extends LitElement  {
     const previous = this.current;
     for(let i = 0; i < this._stack.length -1; i++) {
       const item = this._stack[i];
-      item.keepAlive = false;
       item.dehydrate();
     }
 
@@ -122,16 +125,44 @@ export class Navigator extends LitElement  {
   }
 
   getState() {
-    return this._stack.map((item)=>{return {
-      state: item.getState(),
-      id: item.id,
-      transition: item.transition,
-      viewportScroll: item.viewportScroll
-    }});
+    return {
+      transition: this.transition,
+      stack:this._stack.map((item)=>{return {
+        state: item.getState(),
+        id: item.id,
+        transition: item.transition,
+        viewportScroll: item.viewportScroll
+      }})
+    } 
   }
 
   setState(state) {
+    if( ! state)
+      throw new Error('Cannot set empty state');
+
+    if( ! Array.isArray(state.stack))
+      throw new Error('state.stack should be an array');
+
+    for(let i = 0; i < this._stack.length; i++) {
+      const item = this._stack[i];
+      item.dehydrate();
+    }
     
+    this._stack = state.stack.map((item,i) => {
+      const options = {transition:item.transition, viewportScroll: item.viewportScroll}
+      const ni = new NavigationItem(this, item.id, item.state, options);
+      ni.frameId = i+1;
+      return ni;
+    });
+
+    this.baseScreenId = this._stack.length;
+    this.transitionName = '';
+    this.transitionTarget = '';
+    this.transition = state.transition || ScreenTransition.None;
+
+    this.updateComplete.then(()=>{
+      this.current.hydrate();
+    });
   }
 
 

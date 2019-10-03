@@ -91,7 +91,7 @@ describe('DOM', () => {
     expect(nav._stack.length).to.equal(1);
   });
 
-  it('hydrate twice', async()=>{
+  it('hydrate twice returns same element', async()=>{
     const nav = (await fixture('<wam-navigator></wam-navigator>'));
     const item = (await nav.push('item1', {data:1})).to
     const element = nav.firstElementChild;
