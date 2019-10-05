@@ -2,17 +2,17 @@
   "name": "webapp-navigation",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/webapp-navigation-import.js",
   "scripts": {
     "test": "karma start --coverage",
-    "start": "rollup -w -c rollup.config.js & es-dev-server --app-index example/index.html --node-resolve  --watch --open",
-    "build": "rimraf dist && rollup -c rollup.config.js --configProduction"
+    "start": "rollup -w -c rollup.import.config.js & es-dev-server --app-index example/index.html --node-resolve  --watch --open",
+    "build": "rimraf dist && rollup -c rollup.openwc.config.js && rollup -c rollup.import.config.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/angrycat9000/webapp-navigation.git"
   },
-  "author": "",
+  "author": "Mark Dane",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/angrycat9000/webapp-navigation/issues"
@@ -22,18 +22,14 @@
     "lit-element": "^2.2.1"
   },
   "devDependencies": {
+    "@open-wc/building-rollup": "^0.9.33",
     "@open-wc/testing": "^2.3.4",
     "@open-wc/testing-karma": "^3.1.34",
-    "cssnano": "^4.1.10",
     "es-dev-server": "^1.18.0",
-    "postcss": "^7.0.18",
     "rimraf": "^3.0.0",
     "rollup": "^1.21.4",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-index-html": "^1.5.4",
     "rollup-plugin-license": "^0.12.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-sass": "^1.2.2",
     "rollup-plugin-terser": "^5.1.2"
   }
 }
