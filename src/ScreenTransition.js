@@ -8,7 +8,7 @@ const ScreenTransition = {
     SlideUp: 'slide-up',
     SlideDown: 'slide-down',
     Zoom: 'zoom-in',
-    Fade: 'fade',
+    Fade: 'fade-in',
 };
 
 Object.freeze(ScreenTransition);

@@ -1,6 +1,6 @@
 function click(event) {
   let element = event.target;
-  while(element && element.tagName != 'A' && element.tagName != 'BUTTON') {
+  while(element && element.tagName != 'BUTTON') {
     element = element.parentElement;
   }
   if( ! element)
@@ -8,25 +8,14 @@ function click(event) {
 
   if(element.hasAttribute('data-back')) {
     navigator.back();
-  } else if('A' == element.tagName) {
-    const transition = element.getAttribute('data-transition');
-    const id = element.getAttribute('href');
-    const state =  {
-      title:element.innerHTML, 
-      transition:transition,
-      nextTitle: '',
-      nextTransition: ''
-    };
-    navigator.push(id, state, {transition:transition})
   }  else {
+    const transition = element.getAttribute('data-transition');
     const myState = navigator.current.getState();
     const nextState = {
       title: myState.nextTitle || '(none provided)',
-      transition: myState.nextTransition || '',
-      nextTitle:'',
-      nextTransition:''
+      nextTitle:''
     };
-    navigator.push('nested', nextState, {transition:myState.nextTransition})
+    navigator.push('nested', nextState, {transition})
   }
 
   event.preventDefault();
@@ -60,18 +49,12 @@ function createScreenFromTemplate(id, state, container) {
   const instance = document.importNode(template.content, true);
   const standard = document.getElementById('standard-nav');
 
-
   setTemplateString(instance, 'title', state.title);
-  setTemplateString(instance, 'transition', state.transition);
   const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextitle);
-  const nextTransitionBound = setTemplateInput(instance, 'nextTransition', state.nextTransition)
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
   setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 1) );
 
   container.appendChild(instance);
-
-  //if(state.scroll)
-  //  container.scrollTop = state.scroll;
 
   return {
     getState:function() {
@@ -79,7 +62,6 @@ function createScreenFromTemplate(id, state, container) {
         title: state.title,
         transition: state.transition,
         nextTitle: nextTitleBound ? nextTitleBound.value : '',
-        nextTransition: nextTransitionBound ? nextTransitionBound.value : '',
       }
     }
   }
