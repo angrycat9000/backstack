@@ -12,7 +12,7 @@ function click(event) {
     const transition = element.getAttribute('data-transition');
     const myState = navigator.current.getState();
     const nextState = {
-      title: myState.nextTitle || '(none provided)',
+      title: myState.nextTitle || '(untitled)',
       nextTitle:''
     };
     navigator.push('nested', nextState, {transition})
@@ -61,7 +61,7 @@ function createScreenFromTemplate(id, state, container) {
       return {
         title: state.title,
         transition: state.transition,
-        nextTitle: nextTitleBound ? nextTitleBound.value : '',
+        nextTitle: nextTitleBound ? nextTitleBound.value : 'Second Screen',
       }
     }
   }

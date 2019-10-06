@@ -5,7 +5,7 @@
   "main": "dist/webapp-navigation-import.js",
   "scripts": {
     "test": "karma start --coverage",
-    "start": "rollup -w -c rollup.import.config.js & es-dev-server --app-index example/index.html --node-resolve  --watch --open",
+    "start": "es-dev-server --app-index example/index.html --node-resolve  --watch --open",
     "build": "rimraf dist && rollup -c rollup.openwc.config.js && rollup -c rollup.import.config.js"
   },
   "repository": {
