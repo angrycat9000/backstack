@@ -74,7 +74,7 @@ e.screenFactory = function(id, state, container) {
     case 'home':
       // add elements to container to represent home 
       // in the given state
-    case 'other-screen'
+    case 'other-screen':
       // add elements to container to represent 
       // other-screen in the given state
 
