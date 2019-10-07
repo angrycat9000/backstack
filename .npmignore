@@ -3,3 +3,4 @@ dist/coverage/
 dist/polyfills/
 dist/legacy
 dist/backstack.js*
+dist/index*
