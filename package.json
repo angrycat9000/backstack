@@ -1,8 +1,8 @@
 {
-  "name": "webapp-navigation",
+  "name": "backstack",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/webapp-navigation-import.js",
+  "description": "Animated, stateful and simple single page app functionality for use with Cordova.",
+  "main": "dist/backstack-import.js",
   "scripts": {
     "test": "karma start --coverage",
     "start": "es-dev-server --app-index example/index.html --node-resolve  --watch --open",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/angrycat9000/webapp-navigation.git"
+    "url": "git+https://github.com/angrycat9000/backstack.git"
   },
   "author": "Mark Dane",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/angrycat9000/webapp-navigation/issues"
+    "url": "https://github.com/angrycat9000/backstack/issues"
   },
-  "homepage": "https://github.com/angrycat9000/webapp-navigation#readme",
+  "homepage": "https://backstack.netlify.com/",
   "dependencies": {
     "lit-element": "^2.2.1"
   },

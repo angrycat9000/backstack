@@ -19,9 +19,9 @@ function getPlugins(isProd) {
 }
 
 const config = {
-  input: './src/webapp-navigation.js',
+  input: './src/backstack.js',
   output: {
-    file: './dist/webapp-navigation-import.js',
+    file: './dist/backstack-import.js',
     format: 'esm',
     sourcemap: true,
   },

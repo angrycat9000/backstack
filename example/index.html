@@ -1,9 +1,10 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>WebApp Navigation</title>
+    <title>Backstack</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, user-scalable=no">
-    <script type="module" src="../src/webapp-navigation.js"></script>
+    <meta name="description" content="Open source software for animated and stateful single page applications on Github and NPM"
+    <script type="module" src="../src/backstack.js"></script>
     <script type="module" src="index.js"></script>
     <link href="https://unpkg.com/devices.css/dist/devices.min.css" rel="stylesheet" media="(min-width:600px)"/>
     <style>
@@ -64,7 +65,7 @@
         }
 
     
-        wam-screenstack {
+        backstack-manager {
             width:100vw;
             height:100vh;
             background-color: #e0e0e0;
@@ -78,7 +79,7 @@
                 box-shadow: 0.5rem 0.5rem 0.5rem 0.5rem  rgba(0,0,0,0.4);
                 margin:auto;
             }
-            wam-screenstack {
+            backstack-manager {
                 width:100%;
                 height:100%;
 
@@ -103,13 +104,14 @@
     </template>
 
     <template id="home">
-        <header><h1>WebApp SPA Nav</h1></header>
+        <header><h1>Backstack</h1></header>
         <main>
-            <p class="large">Animated, stateful single page app functionality for use with Cordova. </p>            
-            <p>Available on <a href="https://github.com/angrycat9000/webapp-navigation">Github</a> and NPM</p>
+            <p class="large">Animated, stateful, and simple single page app functionality for use with Cordova. </p>            
+            <p>Available on <a href="https://github.com/angrycat9000/backstack">Github</a> and 
+                <a href="https://www.npmjs.com/package/backstack">NPM</a>.</p>
             <ul>
-                <li><a href="https://github.com/angrycat9000/webapp-navigation#README">Readme</a></li>
-                <li><a href="docs/">API Documentation</a></li>
+                <li><a href="https://github.com/angrycat9000/backstack#readme">Readme</a></li>
+                <li><a href="./docs/">API Documentation</a></li>
                 <!--<li><a href="coverage/">Test Coverage</a></li>-->
             </ul>
 
@@ -142,7 +144,7 @@
 
     <div class="device device-iphone-8 device-silver">
         <div class="device-frame">
-            <wam-screenstack id="screen"></wam-screenstack>
+            <backstack-manager id="screen"></backstack-manager>
         </div>
         <div class="device-stripe"></div>
         <div class="device-header"></div>

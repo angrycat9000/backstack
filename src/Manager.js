@@ -6,7 +6,7 @@ import {LitElement, html, css} from 'lit-element';
 /**
  * @callback screenFactoryFunction
  * @param {string} id 
- * @param {object} state Memento object representing the state of the screen.  Provided by the call to  {@link ScreenStack#push}, {@link ScreenStack#set}, {@link ScreenStack#replace}, or {@link Screen#getState}
+ * @param {object} state Memento object representing the state of the screen.  Provided by the call to  {@link Manager#push}, {@link Manager#set}, {@link Manager#replace}, or {@link Screen#getState}
  * @param {HTMLElement} container Element to populate with contests of screen represented by id in state
  * @return {Screen}
  */
@@ -40,7 +40,7 @@ import {LitElement, html, css} from 'lit-element';
  * @typedef ScreenChange
  * @property {NavigationItem} from
  * @property {NavigationItem} to 
- * @property {ScreenStack} controller
+ * @property {Manager} controller
  */
 
 /**
@@ -67,12 +67,12 @@ import {LitElement, html, css} from 'lit-element';
  * Web component to manage display of pages or screens in a 
  * single page application for Cordova.
  */
-export class ScreenStack extends LitElement  {
+export class Manager extends LitElement  {
   /**
    * **Do not use constructor directly**.  This is a custom HTMLElement and should
    * be created using `document.createElement`.
    * @example
-   * let s = document.createElement('wam-screenstack');
+   * let s = document.createElement('backstack-manager');
    * s.screenFactory = someFunction;
    * @hideconstructor
    */
@@ -219,7 +219,7 @@ export class ScreenStack extends LitElement  {
   }
 
   /**
-   * @memberof ScreenStack
+   * @memberof Manager
    * @return {NavigatorState}
    */
   getState() {
@@ -419,7 +419,7 @@ export class ScreenStack extends LitElement  {
     .zoom-in {transform:scale(0.01); opacity:0}
     .fade-in {opacity:0;}`;}
 }
-window.customElements.define('wam-screenstack', ScreenStack);
+window.customElements.define('backstack-manager', Manager);
 
 function jsonScreenFactory(id, state, container) {
   container.innerHTML = `<h1>State for '${id}'</h1><pre>${JSON.stringify(state)}</pre>`;
@@ -430,4 +430,4 @@ function awaitAnimationFrame() {
   return new Promise((resolve,reject)=>{window.requestAnimationFrame(resolve)});
 }
 
-export default ScreenStack;
+export default Manager;

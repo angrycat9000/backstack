@@ -1,30 +1,30 @@
 import {fixture, expect } from '@open-wc/testing';
-import {ScreenStack, ScreenTransition} from '../src/webapp-navigation';
+import {Manager, ScreenTransition} from '../src/backstack';
 
 describe('Stack', () => {  
   it('init empty', async ()=> {
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
-    expect(nav).to.be.instanceOf(ScreenStack);
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
+    expect(nav).to.be.instanceOf(Manager);
     expect(nav._stack.length).to.equal(0);
     expect(nav.previous).to.be.null;
     expect(nav.current).to.be.null;
   });
   it('push defaults', async ()=> {
     const testId = 'testid01234'
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
-    expect(nav).to.be.instanceOf(ScreenStack);
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
+    expect(nav).to.be.instanceOf(Manager);
     await nav.push(testId, {data:1});
     const item = nav.current;
     expect(item.id).to.equal(testId)
     expect(item.transition).to.equal(ScreenTransition.None);
   });
   it('set', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     await nav.set('itemxyz', null);
     expect(nav.current.id).to.equal('itemxyz');
   });
   it('set with stack', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
 
     await nav.push('item1',null)
     .then(()=>nav.push('item2',null))
@@ -35,7 +35,7 @@ describe('Stack', () => {
     
   })
   it('back', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
 
     await nav.push('item1', null)
       .then(()=>{
@@ -49,12 +49,12 @@ describe('Stack', () => {
     expect(item.id).to.equal('item1');
   })
   it('replace with stack=0', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     await nav.replace('item1', null);
     expect(nav.current.id).to.equal('item1');
   })
   it('replace with stack=1', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     await nav.push('item1', null)
       .then(()=>{
         return nav.replace('item2', null);
@@ -66,7 +66,7 @@ describe('Stack', () => {
   });
 
   it('replace with stack=2', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
 
     await nav.push('item1', null)
       .then(()=>nav.push('item2', null))
@@ -78,7 +78,7 @@ describe('Stack', () => {
   })
 
   it('reject on back with empty stack', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     var rejected = false;
     await nav.back().catch(()=>{
       rejected = true;

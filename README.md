@@ -1,8 +1,12 @@
-# webapp-navigation
+# Backstack
 
-Animated, stateful single page app functionality for use with Cordova. 
+Animated, stateful and simple single page app functionality for use with Cordova. 
 
 This component includes the ability to **save and restore state**.  This is important for Cordova Android apps which may get shutdown in the background.  This component allows the app to restore the screen history when the app is reloaded. Other SPA and router frameworks that rely on the built in browser history lose that history after the app is reloaded. 
+
+[Live Demo @ backstack.netlify.com](https://backstack.netlify.com/)
+
+[API Documentation](https://backstack.netlify.com/docs/)
 
 ## Installation
 
@@ -10,24 +14,24 @@ This component includes the ability to **save and restore state**.  This is impo
 For use when bundling this up in a larger package. Requires LitElement to be available as a peer dependency.  No polyfills included.
 
 ```
-npm install wam-screenstack
+npm install backstack
 ```
 
 ```javascript
-import {ScreenStack, ScreenTransition} from 'wam-screenstack';
+import {Manager, ScreenTransition} from 'backstack';
 ```
 
 ### Full Support
 For use when you just want to include this in a HTML file.  Bundles LitElement and polyfills.
 
 ```html
-<script src="https:\\unpkg.com\webapp-screenstack\webapp-screenstack.js" type="module">
+<script src="https:\\unpkg.com\backstack\backstack.js" type="module">
 ```
 
 ## Usage
 
 ```html
-<wam-screenstack id="myScreenManager"><wam-screenstack>
+<backstack-manager id="myApp"><backstack-manager>
 ```
 
 ### Navigator Functions
@@ -71,7 +75,7 @@ The return value is an object with at least one function, `getState`. This is th
 You can also include a disconnect function if you need to do cleanup with the screen is removed.
 
 ```javascript
-const e = document.getElementById('myScreeenManager');
+const e = document.getElementById('myApp'');
 e.screenFactory = function(id, state, container) {
   switch(id) {
     case 'home':

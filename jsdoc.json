@@ -23,11 +23,11 @@
       "plugins/markdown"
   ],
   "templates": {
-      "referenceTitle": "Cordova SPA Navigation",
+      "referenceTitle": "Backstack",
       "cleverLinks": true,
       "monospaceLinks": false
   },
   "metadata": {
-      "title": "Cordova SPA Navigation"
+      "title": "Backstack"
   }
 }

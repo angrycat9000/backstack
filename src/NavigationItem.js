@@ -5,8 +5,8 @@
  */
 export class NavigationItem {
   /**
-   * **Not for external use**.  Should only be called by {@link ScreenStack}
-   * @param {ScreenStack} parent
+   * **Not for external use**.  Should only be called by {@link Manager}
+   * @param {Manager} parent
    * @param {string} id
    * @param {object} state
    * @param {Options} [options]
@@ -22,7 +22,7 @@ export class NavigationItem {
     /**  @type {string} */
     this.id = id;
 
-    /** @type {ScreenStack} */
+    /** @type {Manager} */
     this.parent = parent;
     this._stateValue = state;
     this._hydrated = null;

@@ -8,7 +8,7 @@ const licensePlugin = license({
     <%= pkg.homepage %>
 
     Licensed under the terms of the <%= pkg.license %> license
-    https://github.com/angrycat9000/webapp-navigation/blob/master/LICENSE
+    https://github.com/angrycat9000/backstack/blob/master/LICENSE
 
     @license @nocompile`,
   }

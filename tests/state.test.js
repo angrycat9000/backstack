@@ -1,5 +1,5 @@
 import {fixture, expect } from '@open-wc/testing';
-import {ScreenTransition} from '../src/webapp-navigation';
+import {ScreenTransition} from '../src/backstack';
 
 function getDummyState() {
   return {
@@ -27,7 +27,7 @@ function screendatafactory(id, state, container) {
 }
 describe('State', () => {  
   it('empty', async ()=> {
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     const state = nav.getState();
     expect(state).to.eql({
       stack:[],
@@ -35,7 +35,7 @@ describe('State', () => {
     });
   });
   it('one item', async()=>{
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     await nav.push('item1', {data:1});
     const state = nav.getState();
     expect(state.stack.length).to.equal(1);
@@ -49,7 +49,7 @@ describe('State', () => {
 
   it('set state', async()=>{
     const state = getDummyState();
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     nav.screenFactory = screendatafactory;
     nav.setState(state);
     await nav.updateComplete;
@@ -62,7 +62,7 @@ describe('State', () => {
   it('set state with previous state', async()=>{
     const state = getDummyState();
 
-    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
     nav.screenFactory = screendatafactory;
     await nav.push('mine', {data:3});
     nav.setState(state);
