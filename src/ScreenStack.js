@@ -4,50 +4,132 @@ import NavigationItem from './NavigationItem';
 import {LitElement, html, css} from 'lit-element';
 
 /**
- * @typedef NavigationEvent
+ * @callback screenFactoryFunction
+ * @param {string} id 
+ * @param {object} state Memento object representing the state of the screen.  Provided by the call to  {@link ScreenStack#push}, {@link ScreenStack#set}, {@link ScreenStack#replace}, or {@link Screen#getState}
+ * @param {HTMLElement} container Element to populate with contests of screen represented by id in state
+ * @return {Screen}
+ */
+
+ /** 
+ * Called to ask a screen for what its current state is.  Typically right before it is removed from the DOM.
+ * @callback getStateFunction
+ * @return {object}
+ */
+
+ /**
+  * @callback disconnectFunction
+  * @param {HTMLElement} container Same container that was passed to the screenFactoryFunction
+  */
+
+ /**
+ * @typedef Screen
+ * @property {getStateFunction} getState
+ * @property {disconnectFunction} [disconnect]
+ */
+
+ 
+/**
+ * @typedef ScrollValues
+ * @property {number} x
+ * @property {number} y
+ */
+
+
+/**
+ * @typedef ScreenChange
  * @property {NavigationItem} from
  * @property {NavigationItem} to 
  * @property {ScreenStack} controller
  */
 
 /**
- * 
+ * @typedef ItemState
+ * @property {object} state
+ * @property {string} id
+ * @property {ScreenTransition} transition
+ * @property {ScrollValues} viewportScroll
+*/
+
+/**
+ * @typedef NavigatorState
+ * @property {ScreenTransition} transition
+ * @property {Array<ItemState>} stack
+ */
+
+/**
+ * @typedef Options
+ * @property {ScreenTransition} [transition]
+ * @property {ScrollValues} [viewportScroll] 
+ */
+
+/**
+ * Web component to manage display of pages or screens in a 
+ * single page application for Cordova.
  */
 export class ScreenStack extends LitElement  {
+  /**
+   * **Do not use constructor directly**.  This is a custom HTMLElement and should
+   * be created using `document.createElement`.
+   * @example
+   * let s = document.createElement('wam-screenstack');
+   * s.screenFactory = someFunction;
+   * @hideconstructor
+   */
   constructor() {
     super();
 
+    /**
+     * Callback responsible for populating screens given an id and state
+     * @type {screenFactoryFunction}  
+     */
     this.screenFactory = jsonScreenFactory;
     this._stack = [];
-    this.transitionName = '';
-    this.transitionTarget = '';
-    this.baseScreenId = '';
+    this._transitionName = '';
+    this._transitionTarget = '';
+    this._baseScreenId = '';
 
-    /** @property {ScreenTransition} transition Transition to use if not specified*/
+    /** 
+     * Default transition that is used if no transition is provided by the {@link Options}
+     * @type {ScreenTransition} 
+     */
     this.transition = ScreenTransition.None;
   }
 
   static get properties() {
     return { 
-      transitionName: {type: String},
-      transitionTarget: {type:String},
-      baseScreenId: {type: String},
+      _transitionName: {type: String},
+      _transitionTarget: {type:String},
+      _baseScreenId: {type: String},
       transition: {type:String, attribute:"transition"}
     };
   }
 
-  /** @property {NavigationItem} */
+  /** 
+   * Top most screen in the history stack.
+   * @type {NavigationItem}
+   */
   get current() {
     const length = this._stack.length;
     return length > 0 ? this._stack[length - 1] : null;
   }
 
+  /**
+   * @param {number} viewportId
+   * @return {ScrollValues}
+   * @private
+   */
   getViewportScroll(viewportId) {
     const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
     if( ! frame)
       throw new Error(`Cannot find viewport with id = "${viewportId}"`);
     return {x:frame.parentElement.scrollLeft, y:frame.parentElement.scrollTop}
   }
+  /**
+   * @param {number} viewportId
+   * @param {ScrollValues} value
+   * @private
+   */
   setViewportScroll(viewportId, value) {
     const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
     if( ! frame)
@@ -56,19 +138,21 @@ export class ScreenStack extends LitElement  {
     frame.parentElement.scrollTop =  value && value.y ? value.y : 0;
   }
 
-  /** @property {NavigationItem} */  
+  /**
+   * Previous screen in the navigation stack, or null
+   * @type {NavigationItem} 
+   */  
   get previous() {
     const length = this._stack.length;
     return length > 1 ? this._stack[length - 2] : null;
   }
 
   /**
-   * @param {string} id
-   * @param {object} state
-   * @param {object} [options]
-   * @param {ScreenTransition} [options.transition]
-   * @param {boolean} [options.keepAlive]
-   * @return Promise<NavigationEvent>
+   * Show a new screen, maintaining previous screens in the history stack.
+   * @param {string} id identifier passed to {@link screenFactoryFunction}
+   * @param {object} state passed to {@link screenFactoryFunction}
+   * @param {Options} [options]
+   * @return {Promise<ScreenChange>}
    */
   push(id, state, options) {
     const next = new NavigationItem(this, id, state, options);
@@ -80,7 +164,11 @@ export class ScreenStack extends LitElement  {
   }
 
   /**
-   * 
+   * Replace the current screen, erasing the history stack.
+   * @param {string} id identifier passed to {@link screenFactoryFunction}
+   * @param {object} state passed to {@link screenFactoryFunction}
+   * @param {Options} [options]
+   * @return {Promise<ScreenChange>}
    */
   set(id, state, options) {
     const newScreen = new NavigationItem(this, id,state,options);
@@ -97,7 +185,12 @@ export class ScreenStack extends LitElement  {
   }
 
   /**
-   * 
+   * Replace the current screen with a new one. Leaves the rest of the history
+   * stack unchanged.
+   * @param {string} id identifier passed to {@link screenFactoryFunction}
+   * @param {object} state passed to {@link screenFactoryFunction}
+   * @param {Options} [options]
+   * @return {Promise<ScreenChange>}
    */
   replace(id, state, options) {
     if(this._stack.length < 1)
@@ -112,9 +205,10 @@ export class ScreenStack extends LitElement  {
   }
 
   /**
-   * @return Promise<NavigationEvent>
+   * Remove the current screen from the stack and show the one below it.
+   * @return {Promise<ScreenChange>}
    */
-  back(transition) {
+  back() {
     if (this._stack.length < 2)
       return Promise.reject('Not enough screens to go back');
 
@@ -124,6 +218,10 @@ export class ScreenStack extends LitElement  {
     return this.animateOut(from, to);
   }
 
+  /**
+   * @memberof ScreenStack
+   * @return {NavigatorState}
+   */
   getState() {
     return {
       transition: this.transition,
@@ -136,6 +234,12 @@ export class ScreenStack extends LitElement  {
     } 
   }
 
+
+  /**
+   * Replace the current screen and history stack with the provided state
+   * @param {NavigatorState}
+   * @return {Promise}
+   */
   setState(state) {
     if( ! state)
       throw new Error('Cannot set empty state');
@@ -155,12 +259,12 @@ export class ScreenStack extends LitElement  {
       return ni;
     });
 
-    this.baseScreenId = this._stack.length;
-    this.transitionName = '';
-    this.transitionTarget = '';
+    this._baseScreenId = this._stack.length;
+    this._transitionName = '';
+    this._transitionTarget = '';
     this.transition = state.transition || ScreenTransition.None;
 
-    this.updateComplete.then(()=>{
+    return this.updateComplete.then(()=>{
       this.current.hydrate();
     });
   }
@@ -169,7 +273,8 @@ export class ScreenStack extends LitElement  {
    /**
    * @param {NavigationItem} entering
    * @param {NavigationItem} previous
-   * @return Promise<NavigationEvent>
+   * @return {Promise<ScreenChange>{}
+   * @private
    */
   animateIn(entering, previous) {
     if( ! entering)
@@ -179,7 +284,7 @@ export class ScreenStack extends LitElement  {
       previous.preserveState();
 
     if(entering.transition == ScreenTransition.None) {
-      this.baseScreenId = entering.viewportId;
+      this._baseScreenId = entering.viewportId;
       return this.updateComplete
       .then(()=>{
         entering.hydrate(this);
@@ -190,9 +295,9 @@ export class ScreenStack extends LitElement  {
       })
     }
 
-    this.baseScreenId = previous ? previous.viewportId : 'none';
-    this.transitionName = entering.transition;
-    this.transitionTarget = entering.viewportId || 'none';
+    this._baseScreenId = previous ? previous.viewportId : 'none';
+    this._transitionName = entering.transition;
+    this._transitionTarget = entering.viewportId || 'none';
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
@@ -201,12 +306,12 @@ export class ScreenStack extends LitElement  {
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
-        this.transitionName = '';
+        this._transitionName = '';
         this.afterTransition = resolve
       }))
     .then(()=>{
-      this.transitionTarget = '';
-      this.baseScreenId = entering.viewportId;
+      this._transitionTarget = '';
+      this._baseScreenId = entering.viewportId;
       return this.updateComplete;
     })
     .then(()=>{
@@ -220,7 +325,8 @@ export class ScreenStack extends LitElement  {
    /**
    * @param {NavigationItem} leaving
    * @param {NavigationItem} next
-   * @return Promise<NavigationEvent>
+   * @return {Promise<ScreenChange>}
+   * @private
    */
   animateOut(leaving, next) {
     if( ! leaving)
@@ -229,7 +335,7 @@ export class ScreenStack extends LitElement  {
     leaving.preserveState();
 
     if(leaving.transition == ScreenTransition.None) {
-      this.baseScreenId = next.viewportId;
+      this._baseScreenId = next.viewportId;
       return this.updateComplete
       .then(()=>{
         if(next)
@@ -239,9 +345,9 @@ export class ScreenStack extends LitElement  {
       })
     }
 
-    this.transitionTarget = leaving.viewportId;
-    this.transitionName = '';
-    this.baseScreenId = next ? next.viewportId : 'none';
+    this._transitionTarget = leaving.viewportId;
+    this._transitionName = '';
+    this._baseScreenId = next ? next.viewportId : 'none';
     return this.updateComplete
     .then(()=>{
       if(next)
@@ -249,12 +355,12 @@ export class ScreenStack extends LitElement  {
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
-        this.transitionName = leaving.transition;
+        this._transitionName = leaving.transition;
         this.afterTransition = resolve
     }))
     .then(()=>{
-      this.transitionTarget = '';
-      this.baseScreenId = next.viewportId;
+      this._transitionTarget = '';
+      this._baseScreenId = next.viewportId;
       return this.updateComplete;
     })
     .then(()=>{
@@ -273,14 +379,14 @@ export class ScreenStack extends LitElement  {
   render() {
     return html`
       <div id="base" class="screen">
-        <slot name="${this.baseScreenId}"></slot>
+        <slot name="${this._baseScreenId}"></slot>
       </div>
-      ${this.transitionTarget ? 
+      ${this._transitionTarget ? 
           html`<div id="motion" 
-                    class="screen ${this.transitionName}"
+                    class="screen ${this._transitionName}"
                     @transitionend=${this.transitionEnd}
                     @transitioncancel=${this.transitionEnd}>
-                <slot name="${this.transitionTarget}"></slot>
+                <slot name="${this._transitionTarget}"></slot>
               </div>`: 
           html``
       }`;
@@ -315,10 +421,9 @@ export class ScreenStack extends LitElement  {
 }
 window.customElements.define('wam-screenstack', ScreenStack);
 
-function jsonScreenFactory(id, state) {
-  const div = document.createElement('div');
-  div.innerHTML = `<h1>State for '${id}'</h1><pre>${JSON.stringify(state)}</pre>`;
-  return {element:div, getState:function() {return state}};
+function jsonScreenFactory(id, state, container) {
+  container.innerHTML = `<h1>State for '${id}'</h1><pre>${JSON.stringify(state)}</pre>`;
+  return {getState:function() {return state}};
 }
 
 function awaitAnimationFrame() {

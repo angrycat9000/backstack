@@ -6,7 +6,9 @@
   "scripts": {
     "test": "karma start --coverage",
     "start": "es-dev-server --app-index example/index.html --node-resolve  --watch --open",
-    "build": "rimraf dist && rollup -c rollup.openwc.config.js && rollup -c rollup.import.config.js"
+    "build": "rollup -c rollup.openwc.config.js && rollup -c rollup.import.config.js",
+    "site": "npm run build && npm run docs && npm run test",
+    "docs": "jsdoc -c ./jsdoc.json -d ./dist/docs/ -R ./README.md"
   },
   "repository": {
     "type": "git",
@@ -25,11 +27,21 @@
     "@open-wc/building-rollup": "^0.9.33",
     "@open-wc/testing": "^2.3.4",
     "@open-wc/testing-karma": "^3.1.34",
+    "braintree-jsdoc-template": "^3.3.0",
     "es-dev-server": "^1.18.0",
+    "jsdoc": "^3.6.3",
     "rimraf": "^3.0.0",
     "rollup": "^1.21.4",
     "rollup-plugin-license": "^0.12.1",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-terser": "^5.1.2"
-  }
+    "rollup-plugin-terser": "^5.1.2",
+  },
+  "keywords": [
+    "spa",
+    "single page application",
+    "cordova",
+    "android",
+    "web component",
+    "vanilla js"
+  ]
 }

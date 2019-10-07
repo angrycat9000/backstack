@@ -1,68 +1,64 @@
 "use strict";
-import ScreenTransition from './ScreenTransition';
 
 /**
- * @typedef screenFactoryFunction
- * @param {string} id
- * @param {object} state
- * @param {HTMLElement} container Element to populate with contests of screen represented by id in state
- * @return {Screen}
- */
-
- /** 
- * @typedef getStateFunction
- * @return {object}
- */
-
- /**
-  * @typedef disconnectFunction
-  * @param {HTMLElement} container Same container that was passed to the screenFactoryFunction
-  */
-
- /**
- * @typedef Screen
- * @property {getStateFunction} getState
- * @property {function} disconnect
- */
-
-/**
- * 
+ * Item on the history stack
  */
 export class NavigationItem {
   /**
+   * **Not for external use**.  Should only be called by {@link ScreenStack}
    * @param {ScreenStack} parent
    * @param {string} id
-   * @param {getStateFunction} getState,
-   * @param {HTMLElement} [element]
+   * @param {object} state
+   * @param {Options} [options]
+   * @hideconstructor
    */
   constructor(parent, id, state, options) {
     options = {
       transition: parent.transition,
       viewportScroll: {x:0, y:0},
       ...options
-    }
+    };
 
-    /** @property {string} */
+    /**  @type {string} */
     this.id = id;
 
-    
-
+    /** @type {ScreenStack} */
     this.parent = parent;
     this._stateValue = state;
     this._hydrated = null;
+
+
     this._element = null;
 
-    /** @property {object} */
+    /** 
+     * @type {number}
+     * @private 
+     */
+    this.viewportId = -1;
+
+    /** 
+     * @type {ScrollValues}   
+     * @private 
+     */
     this.viewportScroll = options.viewportScroll;
 
-    /** @property {ScreenTransition} */
+    /** @type {ScreenTransition} */
     this.transition = options.transition;
   }
 
+  /** 
+   * @type {boolean}
+   * @private
+   */
   get isHydrated() {
     return null != this._hydrated;
   }
 
+  /** 
+   * Return the state of this screen.  Could be from the stored state if the screen is not active. 
+   * Or the result of the {@link Screen#getState} callback
+   * @return {object}
+   */
   getState() {
     if( ! this.isHydrated  || ! this._hydrated.getState) 
       return this._stateValue; 
@@ -71,6 +67,11 @@ export class NavigationItem {
     return s;
   }
 
+  /**
+   * Stores the current state and viewport scroll info.
+   * Needed to save the screen before it is disconnected.
+   * @private
+   */
   preserveState() {
     this._stateValue = this.getState();
     this.viewportScroll = this.parent.getViewportScroll(this.viewportId);
@@ -80,6 +81,7 @@ export class NavigationItem {
    * Get the currently hydrated element representing this screen, or hydrate
    * a new element
    * @return {HTMLElement}
+   * @private
    */
   hydrate() {
     if (this._hydrated || ! this.parent.screenFactory) 
@@ -103,7 +105,8 @@ export class NavigationItem {
   }
 
   /**
-   * 
+   * Removes this screen from the DOM and calls the disconnect method
+   * @private
    */
   dehydrate() {
     if(null == this._hydrated)

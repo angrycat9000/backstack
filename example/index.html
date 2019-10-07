@@ -27,6 +27,7 @@
         .device strong {display:inline-block;}
         main {padding: 1rem; padding-top:0}
         .device main a {display:inline-block}
+        .device li {display:list-item;}
         header svg {fill:currentColor}
         label{display:block; margin-bottom:1.5rem;}
         label span { display:block; margin-bottom:0.5rem;}
@@ -104,15 +105,14 @@
     <template id="home">
         <header><h1>WebApp SPA Nav</h1></header>
         <main>
-            <p class="large">Animated, stateful single page app functionality for use with Cordova. </p>
-            <p>This component includes the ability to <strong>save and restore state</strong>.  This is important
-                for Cordova Android apps which may get shutdown in the background.  This component allows the app to restore
-                the screen history when the app is reloaded.
-                
-            Other SPA and router frameworks that rely
-                 on the built in browser history lose that history after the app is reloaded. </p>
-            
+            <p class="large">Animated, stateful single page app functionality for use with Cordova. </p>            
             <p>Available on <a href="https://github.com/angrycat9000/webapp-navigation">Github</a> and NPM</p>
+            <ul>
+                <li><a href="https://github.com/angrycat9000/webapp-navigation#README">Readme</a></li>
+                <li><a href="docs/">API Documentation</a></li>
+                <li><a href="coverage/">Test Coverage</a></li>
+            </ul>
+
             <h2>Try It</h2>
             <div data-binding="standardNav"></div>
         </main>

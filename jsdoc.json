@@ -1,0 +1,33 @@
+{
+  "tags": {
+      "allowUnknownTags": true,
+      "dictionaries": [
+          "jsdoc",
+          "closure"
+      ]
+  },
+  "source": {
+      "include": [
+          "./src"
+      ],
+      "includePattern": ".+\\.js(doc)?$",
+      "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "opts": {
+      "template": "./node_modules/braintree-jsdoc-template",
+      "encoding": "utf8",
+      "destination": "./docs/",
+      "recurse": true
+  },
+  "plugins": [
+      "plugins/markdown"
+  ],
+  "templates": {
+      "referenceTitle": "Cordova SPA Navigation",
+      "cleverLinks": true,
+      "monospaceLinks": false
+  },
+  "metadata": {
+      "title": "Cordova SPA Navigation"
+  }
+}
