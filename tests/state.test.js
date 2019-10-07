@@ -13,7 +13,7 @@ function getDummyState() {
       },
       {
         id:'item2',
-        state:{data:1}, 
+        state:{data:2}, 
         transition: 'slide-down', 
         viewportScroll: {x:10, y:10}
       }
@@ -21,6 +21,10 @@ function getDummyState() {
   };
 }
 
+function screendatafactory(id, state, container) {
+  container.innerHTML = state.data
+  return {getState() {return state}};
+}
 describe('State', () => {  
   it('empty', async ()=> {
     const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
@@ -46,23 +50,25 @@ describe('State', () => {
   it('set state', async()=>{
     const state = getDummyState();
     const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    nav.screenFactory = screendatafactory;
     nav.setState(state);
     await nav.updateComplete;
     expect(nav.getState()).to.eql(state);
     expect(nav.transition).to.equal('slide-up');
 
-    expect(nav).lightDom.to.equal('<div slot="2"></div>')
+    expect(nav).lightDom.to.equal('<div slot="2">2</div>')
   })
 
   it('set state with previous state', async()=>{
     const state = getDummyState();
 
     const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
-    await nav.push('mine', {data:1});
+    nav.screenFactory = screendatafactory;
+    await nav.push('mine', {data:3});
     nav.setState(state);
     await nav.updateComplete;
     expect(nav.getState()).to.eql(state);
     expect(nav.transition).to.equal('slide-up');
-    expect(nav).lightDom.to.equal('<div slot="2"></div>')
+    expect(nav).lightDom.to.equal('<div slot="2">2</div>')
   })
 });

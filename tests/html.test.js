@@ -116,4 +116,13 @@ describe('DOM', () => {
 
     expect(disconnected).to.be.true;
   })
+
+  it('jsonScreenFactory', async()=>{
+    const nav = (await fixture('<wam-screenstack></wam-screenstack>'));
+    await nav.set('id', {key:'value'});
+    expect(nav).lightDom.to.equal(`<div slot="1">
+      <h1>State for 'id'</h1>
+      <pre>{"key":"value"}</pre>
+      </div>`)
+  })
 })
