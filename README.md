@@ -10,8 +10,7 @@ This component includes the ability to **save and restore state**.  This is impo
 
 ## Installation
 
-### Import
-For use when bundling this up in a larger package. Requires LitElement to be available as a peer dependency.  No polyfills included.
+This assumes it will be bundled in a larger package using webapp, rollup, or another bundler.  It requires LitElement to be available as a peer dependency.  No polyfills included.
 
 ```
 npm install backstack
@@ -21,12 +20,6 @@ npm install backstack
 import {Manager, ScreenTransition} from 'backstack';
 ```
 
-### Full Support
-For use when you just want to include this in a HTML file.  Bundles LitElement and polyfills.
-
-```html
-<script src="https:\\unpkg.com\backstack\backstack.js" type="module">
-```
 
 ## Usage
 

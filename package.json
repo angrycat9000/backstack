@@ -6,8 +6,8 @@
   "scripts": {
     "test": "karma start --coverage",
     "start": "es-dev-server --app-index example/index.html --node-resolve  --watch --open",
-    "build": "rollup -c rollup.openwc.config.js && rollup -c rollup.import.config.js",
-    "site": "npm run build && npm run docs",
+    "build": "rollup -c rollup.import.config.js",
+    "site": "npm run build && npm run docs && rollup -c rollup.openwc.config.js",
     "docs": "jsdoc -c ./jsdoc.json -d ./dist/docs/ -R ./README.md"
   },
   "repository": {

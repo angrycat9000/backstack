@@ -1,0 +1,5 @@
+dist/docs/
+dist/coverage/
+dist/polyfills/
+dist/legacy
+dist/backstack.js*
