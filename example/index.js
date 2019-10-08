@@ -50,7 +50,7 @@ function createScreenFromTemplate(id, state, container) {
   const standard = document.getElementById('standard-nav');
 
   setTemplateString(instance, 'title', state.title);
-  const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextitle);
+  const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextTitle);
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
   setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 1) );
 
@@ -60,7 +60,6 @@ function createScreenFromTemplate(id, state, container) {
     getState:function() {
       return {
         title: state.title,
-        transition: state.transition,
         nextTitle: nextTitleBound ? nextTitleBound.value : 'Second Screen',
       }
     }
