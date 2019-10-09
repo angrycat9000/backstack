@@ -1,3 +1,5 @@
+import {ScreenTransition} from '../src/backstack';
+
 function click(event) {
   let element = event.target;
   while(element && element.tagName != 'BUTTON') {
@@ -8,7 +10,9 @@ function click(event) {
 
   if(element.hasAttribute('data-back')) {
     navigator.back();
-  }  else {
+  } else if(element.hasAttribute('data-overlay')) {
+    navigator.push('overlay', {}, {isOverlay:true, transition:ScreenTransition.None});
+  } else {
     const transition = element.getAttribute('data-transition');
     const myState = navigator.current.getState();
     const nextState = {

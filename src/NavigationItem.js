@@ -1,6 +1,13 @@
 "use strict";
 
 /**
+ * @typedef Options
+ * @property {ScreenTransition} [transition]
+ * @property {ScrollValues} [viewportScroll] 
+ * @property {boolean} [isOverlay]
+ */
+
+/**
  * Item on the history stack
  */
 export class NavigationItem {
@@ -16,6 +23,7 @@ export class NavigationItem {
     options = {
       transition: parent.transition,
       viewportScroll: {x:0, y:0},
+      isOverlay: false,
       ...options
     };
 
@@ -44,6 +52,9 @@ export class NavigationItem {
 
     /** @type {ScreenTransition} */
     this.transition = options.transition;
+
+    /** @type {boolean}  */
+    this.isOverlay = options.isOverlay;
   }
 
   /** 
@@ -74,7 +85,28 @@ export class NavigationItem {
    */
   preserveState() {
     this._stateValue = this.getState();
-    this.viewportScroll = this.parent.getViewportScroll(this.viewportId);
+    this.viewportScroll = this.getScroll();
+  }
+
+
+  /**
+   * @return {ScrollValues}
+   * @private
+   */
+  getScroll() {
+    if( ! this._element)
+      throw new Error ('Setting scroll without element')
+    return {x:this._element.scrollLeft, y:this._element.scrollTop}
+  }
+  /**
+   * @param {ScrollValues} value
+   * @private
+   */
+  setScroll(value) {
+    if( ! this._element)
+      throw new Error ('Setting scroll without element')
+    this._element.scrollLeft = value && value.x ? value.x : 0;
+    this._element.scrollTop =  value && value.y ? value.y : 0;
   }
 
   /**
@@ -89,6 +121,8 @@ export class NavigationItem {
 
     this._element = document.createElement('div');
     this._element.setAttribute('slot', this.viewportId);
+    this._element.style.overflow = 'auto';
+    this._element.style.height = this._element.style.width = '100%';
     this.parent.appendChild(this._element);
 
     const r  = this.parent.screenFactory(this.id, this._stateValue, this._element);
@@ -98,7 +132,7 @@ export class NavigationItem {
     if( 'function' != typeof r.getState)
       throw new Error('screen factory did not return an object with a getState function');
 
-    this.parent.setViewportScroll(this.viewportId, this.viewportScroll);
+    this.setScroll(this.viewportScroll);
 
     this._hydrated = r;
     this._stateValue = null;

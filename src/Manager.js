@@ -58,12 +58,6 @@ import {LitElement, html, css} from 'lit-element';
  */
 
 /**
- * @typedef Options
- * @property {ScreenTransition} [transition]
- * @property {ScrollValues} [viewportScroll] 
- */
-
-/**
  * Web component to manage display of pages or screens in a 
  * single page application for Cordova.
  */
@@ -115,30 +109,6 @@ export class Manager extends LitElement  {
   }
 
   /**
-   * @param {number} viewportId
-   * @return {ScrollValues}
-   * @private
-   */
-  getViewportScroll(viewportId) {
-    const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
-    if( ! frame)
-      throw new Error(`Cannot find viewport with id = "${viewportId}"`);
-    return {x:frame.parentElement.scrollLeft, y:frame.parentElement.scrollTop}
-  }
-  /**
-   * @param {number} viewportId
-   * @param {ScrollValues} value
-   * @private
-   */
-  setViewportScroll(viewportId, value) {
-    const frame = this.shadowRoot.querySelector(`slot[name="${viewportId}"]`);
-    if( ! frame)
-      throw new Error(`Cannot find viewport with id = "${viewportId}"`);
-    frame.parentElement.scrollLeft = value && value.x ? value.x : 0;
-    frame.parentElement.scrollTop =  value && value.y ? value.y : 0;
-  }
-
-  /**
    * Previous screen in the navigation stack, or null
    * @type {NavigationItem} 
    */  
@@ -159,7 +129,11 @@ export class Manager extends LitElement  {
 
     const from = this.current;
     this._stack.push(next);
-    next.viewportId = this._stack.length;
+    const lastVpId = this.previous ? this.previous.viewportId : 0;
+    if( 0 == lastVpId)
+      next.viewportId = 1;
+    else 
+      next.viewportId = next.isOverlay ? lastVpId : lastVpId + 1;
     return this.animateIn(next, from);
   }
 
@@ -225,12 +199,18 @@ export class Manager extends LitElement  {
   getState() {
     return {
       transition: this.transition,
-      stack:this._stack.map((item)=>{return {
-        state: item.getState(),
-        id: item.id,
-        transition: item.transition,
-        viewportScroll: item.viewportScroll
-      }})
+      stack:this._stack.map((item)=>{
+        const itemState =  {
+          state: item.getState(),
+          id: item.id,
+          transition: item.transition,
+          viewportScroll: item.viewportScroll
+        };
+        if(item.isOverlay)
+          itemState.isOverlay = true;
+        
+        return itemState;        
+      })
     } 
   }
 
@@ -251,11 +231,18 @@ export class Manager extends LitElement  {
       const item = this._stack[i];
       item.dehydrate();
     }
-    
+    var viewport = 0;
     this._stack = state.stack.map((item,i) => {
-      const options = {transition:item.transition, viewportScroll: item.viewportScroll}
+      const options = {
+        transition:item.transition, 
+        viewportScroll: 
+        item.viewportScroll,
+        isOverlay:item.isOverlay
+      }
       const ni = new NavigationItem(this, item.id, item.state, options);
-      ni.viewportId = i+1;
+      if( ! ni.isOverlay)
+        viewport++;
+      ni.viewportId = viewport;
       return ni;
     });
 
@@ -265,7 +252,7 @@ export class Manager extends LitElement  {
     this.transition = state.transition || ScreenTransition.None;
 
     return this.updateComplete.then(()=>{
-      this.current.hydrate();
+      this.hydrateViewport(this.current.viewportId);
     });
   }
 
@@ -288,7 +275,7 @@ export class Manager extends LitElement  {
       return this.updateComplete
       .then(()=>{
         entering.hydrate(this);
-        if(previous)
+        if(previous && ! entering.isOverlay)
           previous.dehydrate();
 
         return {from:previous, to:entering, controller:this};
@@ -301,8 +288,8 @@ export class Manager extends LitElement  {
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
-      if(previous)
-        this.setViewportScroll(previous.viewportId, previous.viewportScroll);
+      //if(previous)
+      //  this.setViewportScroll(previous.viewportId, previous.viewportScroll);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -315,11 +302,25 @@ export class Manager extends LitElement  {
       return this.updateComplete;
     })
     .then(()=>{
-      if(previous)
+      if(previous && ! previous.isOverlay)
         previous.dehydrate();
-      this.setViewportScroll(entering.viewportId, entering.viewportScroll);
+      //this.setViewportScroll(entering.viewportId, entering.viewportScroll);
       return {from:previous, to:entering, controller:this}
     });
+  }
+
+  dehydrateViewport(id) {
+    for(let item of this._stack) {
+      if(id == item.viewportId)
+        item.dehydrate();
+    }
+  }
+
+  hydrateViewport(id) {
+    for(let item of this._stack) {
+      if(id == item.viewportId)
+        item.hydrate();
+    }
   }
 
    /**
@@ -338,8 +339,7 @@ export class Manager extends LitElement  {
       this._baseScreenId = next.viewportId;
       return this.updateComplete
       .then(()=>{
-        if(next)
-          next.hydrate(this);
+        this.hydrateViewport(next.viewportId);
         leaving.dehydrate();
         return {from:leaving, to:next, controller:this};
       })
@@ -350,8 +350,7 @@ export class Manager extends LitElement  {
     this._baseScreenId = next ? next.viewportId : 'none';
     return this.updateComplete
     .then(()=>{
-      if(next)
-        next.hydrate(this);
+      this.hydrateViewport(next.viewportId);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -409,7 +408,7 @@ export class Manager extends LitElement  {
       left: 0;
       transform: translate3d(0, 0, 0);
       animation-fill-mode: forwards;
-      overflow: auto;
+      overflow: hidden;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
     .slide-left {transform: translate3d(100%, 0, 0)}

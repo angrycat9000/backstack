@@ -47,28 +47,51 @@ describe('State', () => {
     })
   }) 
 
-  it('set state', async()=>{
-    const state = getDummyState();
-    const nav = (await fixture('<backstack-manager></backstack-manager>'));
-    nav.screenFactory = screendatafactory;
-    nav.setState(state);
-    await nav.updateComplete;
-    expect(nav.getState()).to.eql(state);
-    expect(nav.transition).to.equal('slide-up');
+  describe('Set State', ()=>{
+    it('set state', async()=>{
+      const state = getDummyState();
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screendatafactory;
+      nav.setState(state);
+      await nav.updateComplete;
+      expect(nav.getState()).to.eql(state);
+      expect(nav.transition).to.equal('slide-up');
 
-    expect(nav).lightDom.to.equal('<div slot="2">2</div>')
-  })
+      expect(nav).lightDom.to.equal('<div slot="2">2</div>',  {ignoreAttributes: ['style']})
+    })
 
-  it('set state with previous state', async()=>{
-    const state = getDummyState();
+    it('set state with overlay', async()=>{
+      let state = getDummyState();
+      const json = JSON.stringify(state);
+      state = JSON.parse(json);
+      state.stack.push({
+        isOverlay:true,
+        id:'overlay',
+        transition:'',
+        state:{data:3},
+        viewportScroll: {x:10, y:10}
+      });
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screendatafactory;
+      nav.setState(state);
+      await nav.updateComplete;
+      expect(nav.getState()).to.eql(state);
+      expect(nav.transition).to.equal('slide-up');
 
-    const nav = (await fixture('<backstack-manager></backstack-manager>'));
-    nav.screenFactory = screendatafactory;
-    await nav.push('mine', {data:3});
-    nav.setState(state);
-    await nav.updateComplete;
-    expect(nav.getState()).to.eql(state);
-    expect(nav.transition).to.equal('slide-up');
-    expect(nav).lightDom.to.equal('<div slot="2">2</div>')
+      expect(nav).lightDom.to.equal('<div slot="2">2</div><div slot="2">3</div>',  { ignoreAttributes: ['style'] })
+    })
+
+    it('set state with previous state', async()=>{
+      const state = getDummyState();
+
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screendatafactory;
+      await nav.push('mine', {data:3});
+      nav.setState(state);
+      await nav.updateComplete;
+      expect(nav.getState()).to.eql(state);
+      expect(nav.transition).to.equal('slide-up');
+      expect(nav).lightDom.to.equal('<div slot="2">2</div>', { ignoreAttributes: ['style'] })
+    })
   })
 });
