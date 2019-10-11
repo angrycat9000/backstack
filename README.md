@@ -1,3 +1,6 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/backstack)
+
+
 # Backstack
 
 Animated, stateful and simple single page app functionality for use with Cordova. 
