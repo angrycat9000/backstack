@@ -85,9 +85,11 @@ export class Manager extends LitElement  {
      */
     this.screenFactory = jsonScreenFactory;
     this._stack = [];
-    this._transitionName = '';
-    this._transitionTarget = '';
-    this._baseScreenId = '';
+    this._targetTransition = '';
+    this._targetId = '';
+    this._baseTransition = '';
+    this._baseId = '';
+    this._isAnimating = false;
 
     /** 
      * Default transition that is used if no transition is provided by the {@link Options}
@@ -98,9 +100,11 @@ export class Manager extends LitElement  {
 
   static get properties() {
     return { 
-      _transitionName: {type: String},
-      _transitionTarget: {type:String},
-      _baseScreenId: {type: String},
+      _targetTransition: {type: String},
+      _targetId: {type:String},
+      _baseTransition: {type:String},
+      _baseId: {type: String},
+      _isAnimating: {type:Boolean},
       transition: {type:String, attribute:"transition"}
     };
   }
@@ -259,9 +263,10 @@ export class Manager extends LitElement  {
       return ni;
     });
 
-    this._baseScreenId = this._stack.length;
-    this._transitionName = '';
-    this._transitionTarget = '';
+    this._baseId = this._stack.length;
+    this._baseTransition = '';
+    this._targetId = '';
+    this._targetTransition = ''
     this.transition = state.transition || ScreenTransition.None;
 
     return this.updateComplete.then(()=>{
@@ -284,7 +289,7 @@ export class Manager extends LitElement  {
       previous.preserveState();
 
     if(entering.transition == ScreenTransition.None) {
-      this._baseScreenId = entering.viewportId;
+      this._baseId = entering.viewportId;
       return this.updateComplete
       .then(()=>{
         entering.hydrate(this);
@@ -295,9 +300,12 @@ export class Manager extends LitElement  {
       })
     }
 
-    this._baseScreenId = previous ? previous.viewportId : 'none';
-    this._transitionName = entering.transition;
-    this._transitionTarget = entering.viewportId || 'none';
+    const transitions = parseTransitions(entering.transition);
+
+    this._baseId = previous ? previous.viewportId : 'none';
+    this._baseTransition = '';
+    this._targetTransition = transitions.target;
+    this._targetId = entering.viewportId || 'none';
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
@@ -306,12 +314,16 @@ export class Manager extends LitElement  {
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
-        this._transitionName = '';
+        this._isAnimating = true;
+        this._targetTransition = '';
+        this._baseTransition = transitions.base;
         this.afterTransition = resolve
       }))
     .then(()=>{
-      this._transitionTarget = '';
-      this._baseScreenId = entering.viewportId;
+      this._isAnimating = false;
+      this._baseTransition = '';
+      this._targetId = ''
+      this._baseId = entering.viewportId;
       return this.updateComplete;
     })
     .then(()=>{
@@ -335,7 +347,7 @@ export class Manager extends LitElement  {
     leaving.preserveState();
 
     if(leaving.transition == ScreenTransition.None) {
-      this._baseScreenId = next.viewportId;
+      this._baseId = next.viewportId;
       return this.updateComplete
       .then(()=>{
         if(next)
@@ -345,9 +357,12 @@ export class Manager extends LitElement  {
       })
     }
 
-    this._transitionTarget = leaving.viewportId;
-    this._transitionName = '';
-    this._baseScreenId = next ? next.viewportId : 'none';
+    const transitions = parseTransitions(leaving.transition);
+
+    this._targetId = leaving.viewportId;
+    this._targetTransition = '';
+    this._baseId = next ? next.viewportId : 'none';
+    this._baseTransition = transitions.base;
     return this.updateComplete
     .then(()=>{
       if(next)
@@ -355,12 +370,16 @@ export class Manager extends LitElement  {
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
-        this._transitionName = leaving.transition;
+        this._isAnimating = true;
+        this._targetTransition = transitions.target
+        this._baseTransition = '';
         this.afterTransition = resolve
     }))
     .then(()=>{
-      this._transitionTarget = '';
-      this._baseScreenId = next.viewportId;
+      this._isAnimating = false;
+      this._targetTransition = '';
+      this._baseId = next.viewportId;
+      this._targetId = '';
       return this.updateComplete;
     })
     .then(()=>{
@@ -377,16 +396,17 @@ export class Manager extends LitElement  {
   }
 
   render() {
+    var screenClass = this._isAnimating ? 'screen animating' : 'screen';
     return html`
-      <div id="base" class="screen">
-        <slot name="${this._baseScreenId}"></slot>
+      <div id="base" class="${screenClass} ${this._baseTransition}">
+        <slot name="${this._baseId}"></slot>
       </div>
-      ${this._transitionTarget ? 
-          html`<div id="motion" 
-                    class="screen ${this._transitionName}"
+      ${this._targetId ? 
+          html`<div id="target" 
+                    class="${screenClass} ${this._targetTransition}"
                     @transitionend=${this.transitionEnd}
                     @transitioncancel=${this.transitionEnd}>
-                <slot name="${this._transitionTarget}"></slot>
+                <slot name="${this._targetId}"></slot>
               </div>`: 
           html``
       }`;
@@ -403,17 +423,20 @@ export class Manager extends LitElement  {
     .screen {
       width: 100%;
       height: 100%;
-      transition: transform 0.5s, opacity 0.5s;
       position: absolute;
       top: 0;
       left: 0;
       transform: translate3d(0, 0, 0);
-      animation-fill-mode: forwards;
+      opacity: 1;
       overflow: auto;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
     }
+    .animating {
+      transition: transform 0.5s, opacity 0.5s;
+    }
     .slide-left {transform: translate3d(100%, 0, 0)}
     .slide-right {transform: translate3d(-100%, 0, 0)}
+    .push-right {transform: translate3d(-100%, 0, 0)}
     .slide-up {transform:translate3d(0,100%,0)}
     .slide-down {transform:translate3d(0,-100%,0)}
     .zoom-in {transform:scale(0.01); opacity:0}
@@ -428,6 +451,16 @@ function jsonScreenFactory(id, state, container) {
 
 function awaitAnimationFrame() {
   return new Promise((resolve,reject)=>{window.requestAnimationFrame(resolve)});
+}
+
+function parseTransitions(s) {
+  if( ! s)
+    return {target:'', base:''}
+  const split = s.split('/');
+  return {
+    target:split[0],
+    base: split.length > 1 ? split[1] : ''
+  };
 }
 
 export default Manager;

@@ -1,3 +1,5 @@
+import {ScreenTransition} from '../src/backstack'
+
 function click(event) {
   let element = event.target;
   while(element && element.tagName != 'BUTTON') {
@@ -69,6 +71,12 @@ function createScreenFromTemplate(id, state, container) {
 var navigator;
 function run() {
   document.addEventListener('click', click);
+
+  const p = document.getElementById('standard-nav').content.firstElementChild;
+  for(let t in ScreenTransition) {
+     const val = ScreenTransition[t];
+     p.innerHTML += `<button data-transition="${val}">${t}</button> `;
+  }
 
   navigator = document.getElementById('screen');
   navigator.screenFactory = createScreenFromTemplate;
