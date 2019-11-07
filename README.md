@@ -1,3 +1,6 @@
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/backstack)
+
+
 # Backstack
 
 Animated, stateful and simple single page app functionality for use with Cordova. 
@@ -68,7 +71,7 @@ The return value is an object with at least one function, `getState`. This is th
 You can also include a disconnect function if you need to do cleanup with the screen is removed.
 
 ```javascript
-const e = document.getElementById('myApp'');
+const e = document.getElementById('myApp');
 e.screenFactory = function(id, state, container) {
   switch(id) {
     case 'home':

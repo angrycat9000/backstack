@@ -74,6 +74,12 @@ var navigator;
 function run() {
   document.addEventListener('click', click);
 
+  const p = document.getElementById('standard-nav').content.firstElementChild;
+  for(let t in ScreenTransition) {
+     const val = ScreenTransition[t];
+     p.innerHTML += `<button data-transition="${val}">${t}</button> `;
+  }
+
   navigator = document.getElementById('screen');
   navigator.screenFactory = createScreenFromTemplate;
   window.wamNavigator = navigator;
