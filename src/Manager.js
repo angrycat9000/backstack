@@ -471,7 +471,12 @@ export class Manager extends LitElement  {
     .slide-up {transform:translate3d(0,100%,0)}
     .slide-down {transform:translate3d(0,-100%,0)}
     .zoom-in {transform:scale(0.01); opacity:0}
-    .fade-in {opacity:0;}`;}
+    .fade-in {opacity:0;}
+    .fade-left {transform: translate3d(25%, 0, 0); opacity:0}
+    .fade-right {transform: translate3d(-25%, 0, 0); opacity:0}
+    .fade-up {transform: translate3d(0, 25%, 0); opacity:0}
+    .fade-down {transform: translate3d(0, -25%, 0); opacity:0}
+    `;}
 }
 window.customElements.define('backstack-manager', Manager);
 

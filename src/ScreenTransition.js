@@ -24,8 +24,16 @@ const ScreenTransition = {
     PushRight: 'slide-right/slide-left',
     /** Both screens move down togethor.  Screen enters from the top */
     PushDown: 'slide-down/slide-up',
-    /** Both screens move up togethor.  Screen enters from the botttom */
-    PushUp: 'slide-up/slide-down'
+    /** Both screens move up togethor.  Screen enters from the bottom */
+    PushUp: 'slide-up/slide-down',
+    /** Fades in at the same time as sliding partially from the left */
+    FadeLeft: 'fade-left',
+    /** Fades in at the same time as sliding partially from the right */
+    FadeRight: 'fade-right',
+    /** Fades in at the same time as sliding partially from the top */
+    FadeUp: 'fade-up',
+    /** Fades in at the same time as sliding partially from the bottom */
+    FadeDown: 'fade-down',
 };
 
 Object.freeze(ScreenTransition);
