@@ -91,7 +91,7 @@ export class NavigationItem {
   }
 
   /**
-   * @type {string} slot;
+   * @type {string}
    */
   get slot() {
     return this.tempViewportId || this.viewportId || 'none';
