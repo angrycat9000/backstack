@@ -91,10 +91,10 @@ export class NavigationItem {
   }
 
   /**
-   * @type {}
+   * @type {string} slot;
    */
   get slot() {
-    return this.tempViewportId || this.viewportId;
+    return this.tempViewportId || this.viewportId || 'none';
   }
 
   /**
@@ -176,16 +176,6 @@ export class NavigationItem {
 
     this._hydrated = null;
     this._element = null;
-  }
-
-  onAfterEnter() {
-    if(this._hydrated && this._hydrated.afterEnter)
-      this._hydrated.afterEnter();
-  }
-
-  onBeforeExit() {
-    if(this._hydrated && this._hydrated.beforeExit)
-      this._hydrated.beforeExit();
   }
 }
 

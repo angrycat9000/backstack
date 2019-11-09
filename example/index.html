@@ -32,6 +32,7 @@
         header svg {fill:currentColor}
         label{display:block; margin-bottom:1.5rem;}
         label span { display:block; margin-bottom:0.5rem;}
+        body .device-frame button {display:inline-block};
 
         .next-transition-buttons {
             display:flex;
@@ -40,7 +41,7 @@
             margin-left:-0.5rem;
         }
         .next-transition-buttons button {
-            margin-left:0.5rem;
+            margin-right:0.5rem;
             margin-bottom:0.5rem;
         }
 
@@ -114,8 +115,7 @@
 <body>
    
     <template id="standard-nav">
-        <p class="next-transition-buttons">
-        </p>
+        <p class="next-transition-buttons"></p>
     </template>
 
     <template id="home">
@@ -150,17 +150,18 @@
             <h1 data-binding="title"></h1>
         </header>
         <main>
+        <p>
+            <button data-overlay>View State</button> 
+            <button data-reset>Reset</button>
+        </p>
         <h2>Next Screen</h2>
             <label>
                 <span>Title</span>
                 <input type="text" data-binding="nextTitle"/>
             </label>
+
             <div data-binding="standardNav"></div>
 
-
- 
-        <h2>This Screen</h2>
-            <button data-overlay>View State</button> <button data-reset>Reset</button>
         </main>
     </template>
 

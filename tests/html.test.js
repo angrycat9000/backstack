@@ -71,37 +71,57 @@ describe('DOM', () => {
       expect(nav).lightDom.to.equal('<div slot="1">mine</div>',  { ignoreAttributes: ['style'] })
     });
 
-    it('from 1', async ()=> {
+    it('with 1', async ()=> {
       const nav = (await fixture('<backstack-manager></backstack-manager>'));
       nav.screenFactory = screenFactory
-      await nav.set('test', {data:6}, {transition:ScreenTransition.SlideLeft});
-      await nav.replace('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
+      await nav.set('old screen', {data:6}, {transition:ScreenTransition.SlideLeft});
+      await nav.replace('new screen', {data:7}, {transition:ScreenTransition.SlideLeft});
+      expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
+      expect(nav).lightDom.to.equal('<div slot="1">new screen</div>',  { ignoreAttributes: ['style'] })
+      expect(nav._stack.length).to.equal(1);
+    });
+  })
+  describe('Back', ()=>{
+    it('from 2 -> 1', async ()=> {
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
+      await nav.push('test', {data:6}, {transition:ScreenTransition.SlideLeft});
+      await nav.back();
       expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
       expect(nav).lightDom.to.equal('<div slot="1">mine</div>',  { ignoreAttributes: ['style'] })
       expect(nav._stack.length).to.equal(1);
     });
+  
+    it('without transition', async ()=> {
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.push('mine', {data:7}, {transition:ScreenTransition.None});
+      await nav.push('test', {data:6}, {transition:ScreenTransition.None});
+      await nav.back();
+      expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
+      expect(nav).lightDom.to.equal('<div slot="1">mine</div>',  { ignoreAttributes: ['style'] })
+      expect(nav._stack.length).to.equal(1);
+    });
+    it('from overlay', async()=>{
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.set('bottom', {data:6});
+      await nav.push('overlay', {data:7}, {isOverlay:true, transition:ScreenTransition.SlideLeft});
+      await nav.back();
+      expect(nav).lightDom.to.equal(`<div slot="1">bottom</div>`,  { ignoreAttributes: ['style'] })
+    })
+    it('to overlay', async()=>{
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.set('bottom', {data:6});
+      await nav.push('overlay', {data:7}, {isOverlay:true});
+      await nav.push('bottom', {data:8}, {transition:ScreenTransition.SlideLeft});
+      await nav.back();
+      expect(nav).lightDom.to.equal(`<div slot="1">bottom</div><div slot="1">overlay</div>`,  { ignoreAttributes: ['style'] })
+    })
   })
-  it('back from 1', async ()=> {
-    const nav = (await fixture('<backstack-manager></backstack-manager>'));
-    nav.screenFactory = screenFactory
-    await nav.push('mine', {data:7}, {transition:ScreenTransition.SlideLeft});
-    await nav.push('test', {data:6}, {transition:ScreenTransition.SlideLeft});
-    await nav.back();
-    expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
-    expect(nav).lightDom.to.equal('<div slot="1">mine</div>',  { ignoreAttributes: ['style'] })
-    expect(nav._stack.length).to.equal(1);
-  });
-
-  it('back without transition', async ()=> {
-    const nav = (await fixture('<backstack-manager></backstack-manager>'));
-    nav.screenFactory = screenFactory
-    await nav.push('mine', {data:7}, {transition:ScreenTransition.None});
-    await nav.push('test', {data:6}, {transition:ScreenTransition.None});
-    await nav.back();
-    expect(nav).shadowDom.to.equal('<div id="base" class="screen"><slot name="1"></slot></div>');
-    expect(nav).lightDom.to.equal('<div slot="1">mine</div>',  { ignoreAttributes: ['style'] })
-    expect(nav._stack.length).to.equal(1);
-  });
+  
 
   it('hydrate twice returns same element', async()=>{
     const nav = (await fixture('<backstack-manager></backstack-manager>'));
@@ -136,5 +156,23 @@ describe('DOM', () => {
       <h1>State for 'id'</h1>
       <pre>{"key":"value"}</pre>
       </div>`,  { ignoreAttributes: ['style'] })
+  })
+
+  describe('Overlay', ()=>{
+    it('overlay screen keeps previous', async()=>{
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.set('bottom', {data:6});
+      await nav.push('new screen', {data:7}, {isOverlay:true, transition:ScreenTransition.SlideLeft});
+      expect(nav).lightDom.to.equal(`<div slot="1">bottom</div><div slot="1">new screen</div>`,  { ignoreAttributes: ['style'] })
+    })
+    it('new screen clears viewport', async()=>{
+      const nav = (await fixture('<backstack-manager></backstack-manager>'));
+      nav.screenFactory = screenFactory
+      await nav.set('bottom', {data:6});
+      await nav.push('overlay', {data:7}, {isOverlay:true});
+      await nav.push('new', {data:7}, {transition:ScreenTransition.SlideLeft});
+      expect(nav).lightDom.to.equal(`<div slot="2">new</div>`,  { ignoreAttributes: ['style'] })
+    })
   })
 })

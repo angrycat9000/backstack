@@ -4,6 +4,7 @@ import NavigationItem from './NavigationItem';
 import {LitElement, html, css} from 'lit-element';
 
 const TEMP_OVERLAY = 'temp-overlay';
+const TEMP_SET = 'temp-set';
 
 /**
  * @callback screenFactoryFunction
@@ -125,6 +126,15 @@ export class Manager extends LitElement  {
     return length > 1 ? this._stack[length - 2] : null;
   }
 
+  pushNextItem(item) {
+    let id = this.current ? this.current.viewportId : 0;
+    if( ! item.isOverlay)
+      id++;
+    item.viewportId = id;
+    
+    this._stack.push(item);
+  }
+
   /**
    * Show a new screen, maintaining previous screens in the history stack.
    * @param {string} id identifier passed to {@link screenFactoryFunction}
@@ -136,12 +146,7 @@ export class Manager extends LitElement  {
     const next = new NavigationItem(this, id, state, options);
 
     const from = this.current;
-    this._stack.push(next);
-    const lastVpId = this.previous ? this.previous.viewportId : 0;
-    if( 0 == lastVpId)
-      next.viewportId = 1;
-    else 
-      next.viewportId = next.isOverlay ? lastVpId : lastVpId + 1;
+    this.pushNextItem(next);
     return this.animateIn(next, from);
   }
 
@@ -153,17 +158,20 @@ export class Manager extends LitElement  {
    * @return {Promise<ScreenChange>}
    */
   set(id, state, options) {
-    const newScreen = new NavigationItem(this, id,state,options);
+    const newScreen = new NavigationItem(this, id, state, options);
     const previous = this.current;
-    for(let i = 0; i < this._stack.length -1; i++) {
-      const item = this._stack[i];
-      item.dehydrate();
-    }
-
-    this._stack = [newScreen];
-    newScreen.viewportId = this._stack.length;
+    const oldStack = this._stack;
+    this._stack = [];
+    this.pushNextItem(newScreen);
+    newScreen.tempViewportId = TEMP_SET;
 
     return this.animateIn(newScreen, previous)
+    .then(()=>{
+      for(const item of oldStack)
+        item.dehydrate();
+
+      return {from:previous, to:newScreen, controller:this};
+    })
   }
 
   /**
@@ -180,9 +188,9 @@ export class Manager extends LitElement  {
     
     const previous = this._stack.pop();
 
-    const next = new NavigationItem(this, id,state,options);
-    this._stack.push(next);
-    next.viewportId = this._stack.length;
+    const next = new NavigationItem(this, id, state, options);
+    next.tempViewportId = TEMP_SET;
+    this.pushNextItem(next);
     return this.animateIn(next, previous)
   }
 
@@ -279,13 +287,14 @@ export class Manager extends LitElement  {
     if(previous)
       previous.preserveState();
 
-    if(entering.transition == ScreenTransition.None) {
+    if( ! entering.transition) {
       this._baseId = entering.viewportId;
       return this.updateComplete
       .then(()=>{
-        entering.hydrate(this);
+        entering.tempViewportId = null;
+        entering.hydrate();
         if(previous && ! entering.isOverlay)
-          this.dehydrateViewport(previous.viewportId);
+          previous.dehydrate();
 
         return {from:previous, to:entering, controller:this};
       })
@@ -293,20 +302,19 @@ export class Manager extends LitElement  {
 
     const transitions = parseTransitions(entering.transition);
 
-    this._baseId = previous ? previous.viewportId : 'none';
-    this._baseTransition = '';
-    this._targetTransition = transitions.target;
-    this._targetId = entering.viewportId || 'none';
-
     if(entering.isOverlay) {
-      this._targetId = TEMP_OVERLAY;
-      entering.tempViewportId = this._targetId;
+      entering.tempViewportId = TEMP_OVERLAY;
       transitions.base = '';
     }
 
+    this._baseId = previous ? previous.viewportId : 'none';
+    this._baseTransition = '';
+    this._targetTransition = transitions.target;
+    this._targetId = entering.slot;
+
     return this.updateComplete
     .then(()=>{
-      entering.hydrate(this);
+      entering.hydrate();
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -324,8 +332,13 @@ export class Manager extends LitElement  {
       return this.updateComplete;
     })
     .then(()=>{
-      if(previous && ! entering.isOverlay)
-        this.dehydrateViewport(previous.viewportId);
+      if(previous && ! entering.isOverlay) {
+        // always dehydrate the previous because it will be missed by this.dehydrateViewport if it isn't on the stack.
+        previous.dehydrate(); 
+        // if the previous viewport is now hidden, dehydrate all of the screens in it
+        if(previous.viewportId !== entering.viewportId)
+          this.dehydrateViewport(previous.viewportId);
+      }
       return {from:previous, to:entering, controller:this}
     });
   }
@@ -356,7 +369,7 @@ export class Manager extends LitElement  {
 
     leaving.preserveState();
 
-    if(leaving.transition == ScreenTransition.None) {
+    if( ! leaving.transition) {
       this._baseId = next.viewportId;
       return this.updateComplete
       .then(()=>{
@@ -367,18 +380,15 @@ export class Manager extends LitElement  {
     }
 
     const transitions = parseTransitions(leaving.transition);
-
-    this._targetId = leaving.viewportId;
-    this._targetTransition = '';
-    this._baseId = next ? next.viewportId : 'none';
-    this._baseTransition = transitions.base;
-
     if(leaving.isOverlay) {
-      this._targetId = TEMP_OVERLAY;
-      leaving.tempViewportId = this._targetId;
+      leaving.tempViewportId = TEMP_OVERLAY;
       this._baseTransition = '';
     }
 
+    this._targetId = leaving.slot;
+    this._targetTransition = '';
+    this._baseId = next ? next.viewportId : 'none';
+    this._baseTransition = transitions.base;
 
     return this.updateComplete
     .then(()=>{
@@ -400,11 +410,7 @@ export class Manager extends LitElement  {
       return this.updateComplete;
     })
     .then(()=>{
-      if(leaving.isOverlay)
-        leaving.dehydrate();
-      else
-        this.dehydrateViewport(leaving.viewportId);
-      
+      leaving.dehydrate();
       return {from:leaving, to:next, controller:this}
     })
   }

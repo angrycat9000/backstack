@@ -21,9 +21,12 @@ function click(event) {
     const myState = navigator.current.getState();
     const nextState = {
       title: myState.nextTitle || '(untitled)',
-      nextTitle:''
+      nextTitle: `Screen #${navigator._stack.length + 2}`
     };
-    navigator.push('nested', nextState, {transition})
+    if (element.hasAttribute('data-replace'))
+      navigator.replace('nested', nextState, {transition});
+    else
+      navigator.push('nested', nextState, {transition});
   }
 
   event.preventDefault();
