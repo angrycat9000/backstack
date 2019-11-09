@@ -3,6 +3,8 @@ import ScreenTransition from './ScreenTransition';
 import NavigationItem from './NavigationItem';
 import {LitElement, html, css} from 'lit-element';
 
+const TEMP_OVERLAY = 'temp-overlay';
+
 /**
  * @callback screenFactoryFunction
  * @param {string} id 
@@ -84,6 +86,8 @@ export class Manager extends LitElement  {
     this._baseTransition = '';
     this._baseId = '';
     this._isAnimating = false;
+
+    this._busy = false;
 
     /** 
      * Default transition that is used if no transition is provided by the {@link Options}
@@ -281,7 +285,7 @@ export class Manager extends LitElement  {
       .then(()=>{
         entering.hydrate(this);
         if(previous && ! entering.isOverlay)
-          previous.dehydrate();
+          this.dehydrateViewport(previous.viewportId);
 
         return {from:previous, to:entering, controller:this};
       })
@@ -293,11 +297,16 @@ export class Manager extends LitElement  {
     this._baseTransition = '';
     this._targetTransition = transitions.target;
     this._targetId = entering.viewportId || 'none';
+
+    if(entering.isOverlay) {
+      this._targetId = TEMP_OVERLAY;
+      entering.tempViewportId = this._targetId;
+      transitions.base = '';
+    }
+
     return this.updateComplete
     .then(()=>{
       entering.hydrate(this);
-      //if(previous)
-      //  this.setViewportScroll(previous.viewportId, previous.viewportScroll);
       return awaitAnimationFrame()})
     .then(awaitAnimationFrame)
     .then(()=>new Promise((resolve,reject)=>{
@@ -311,18 +320,18 @@ export class Manager extends LitElement  {
       this._baseTransition = '';
       this._targetId = ''
       this._baseId = entering.viewportId;
+      entering.tempViewportId = null;
       return this.updateComplete;
     })
     .then(()=>{
-      if(previous && ! previous.isOverlay)
-        previous.dehydrate();
-      //this.setViewportScroll(entering.viewportId, entering.viewportScroll);
+      if(previous && ! entering.isOverlay)
+        this.dehydrateViewport(previous.viewportId);
       return {from:previous, to:entering, controller:this}
     });
   }
 
   dehydrateViewport(id) {
-    for(let item of this._stack) {ar
+    for(let item of this._stack) {
       if(id == item.viewportId)
         item.dehydrate();
     }
@@ -363,6 +372,14 @@ export class Manager extends LitElement  {
     this._targetTransition = '';
     this._baseId = next ? next.viewportId : 'none';
     this._baseTransition = transitions.base;
+
+    if(leaving.isOverlay) {
+      this._targetId = TEMP_OVERLAY;
+      leaving.tempViewportId = this._targetId;
+      this._baseTransition = '';
+    }
+
+
     return this.updateComplete
     .then(()=>{
       this.hydrateViewport(next.viewportId);
@@ -379,10 +396,15 @@ export class Manager extends LitElement  {
       this._targetTransition = '';
       this._baseId = next.viewportId;
       this._targetId = '';
+      leaving.tempViewportId = null;
       return this.updateComplete;
     })
     .then(()=>{
-      leaving.dehydrate();
+      if(leaving.isOverlay)
+        leaving.dehydrate();
+      else
+        this.dehydrateViewport(leaving.viewportId);
+      
       return {from:leaving, to:next, controller:this}
     })
   }
@@ -402,7 +424,7 @@ export class Manager extends LitElement  {
       </div>
       ${this._targetId ? 
           html`<div id="target" 
-                    class="${screenClass} ${this._targetTransition}"
+                    class="${screenClass} ${this._targetTransition} ${this._targetId === TEMP_OVERLAY ? 'overlay' : ''}"
                     @transitionend=${this.transitionEnd}
                     @transitioncancel=${this.transitionEnd}>
                 <slot name="${this._targetId}"></slot>
@@ -430,6 +452,9 @@ export class Manager extends LitElement  {
       opacity: 1;
       overflow: auto;
       background: var(--screen-background, radial-gradient(circle, rgba(255,255,255,1) 15%, rgba(233,233,233,1) 85%));
+    }
+    .overlay {
+      background:none;
     }
     .animating {
       transition: transform 0.5s, opacity 0.5s;

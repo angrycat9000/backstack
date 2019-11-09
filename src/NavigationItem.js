@@ -55,6 +55,8 @@ export class NavigationItem {
 
     /** @type {boolean}  */
     this.isOverlay = options.isOverlay;
+
+    this._tempViewportId = '';
   }
 
   /** 
@@ -76,6 +78,23 @@ export class NavigationItem {
   
     const s = this._hydrated.getState() || {};
     return s;
+  }
+
+  /**
+   * 
+   */
+  get tempViewportId() {return this._tempViewportId}
+  set tempViewportId (value) {
+    this._tempViewportId = value;
+    if(this._element)
+      this._element.setAttribute('slot', this.slot)
+  }
+
+  /**
+   * @type {}
+   */
+  get slot() {
+    return this.tempViewportId || this.viewportId;
   }
 
   /**
@@ -120,9 +139,13 @@ export class NavigationItem {
       return this._element;
 
     this._element = document.createElement('div');
-    this._element.setAttribute('slot', this.viewportId);
+    this._element.setAttribute('slot', this.slot);
     this._element.style.overflow = 'auto';
     this._element.style.height = this._element.style.width = '100%';
+    if(this.isOverlay) {
+      this._element.style.position = 'fixed';
+      this._element.style.top = this._element.style.left = '0';
+    }
     this.parent.appendChild(this._element);
 
     const r  = this.parent.screenFactory(this.id, this._stateValue, this._element);
@@ -153,6 +176,16 @@ export class NavigationItem {
 
     this._hydrated = null;
     this._element = null;
+  }
+
+  onAfterEnter() {
+    if(this._hydrated && this._hydrated.afterEnter)
+      this._hydrated.afterEnter();
+  }
+
+  onBeforeExit() {
+    if(this._hydrated && this._hydrated.beforeExit)
+      this._hydrated.beforeExit();
   }
 }
 

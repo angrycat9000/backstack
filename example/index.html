@@ -91,6 +91,7 @@
             position:absolute;
             background: white;
             overflow:auto;
+            padding: 0.5rem;
         }
 
 
@@ -114,7 +115,6 @@
    
     <template id="standard-nav">
         <p class="next-transition-buttons">
-            <button data-overlay>Show Overlay</button>
         </p>
     </template>
 
@@ -138,7 +138,7 @@
     <template id="overlay">
         <div class="overlay">
             <modal>
-                <button data-back>Close</button>
+                <button data-back>Close</button> <button data-overlay data-transition="slide-up">View State</button>
                 <pre data-binding="state"></pre>
             </modal>
         </div>
@@ -159,8 +159,8 @@
 
 
  
-        <h2>State</h2>
-            <pre data-binding="state"></pre>
+        <h2>This Screen</h2>
+            <button data-overlay>View State</button> <button data-reset>Reset</button>
         </main>
     </template>
 

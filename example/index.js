@@ -10,8 +10,12 @@ function click(event) {
 
   if(element.hasAttribute('data-back')) {
     navigator.back();
+  } else if (element.hasAttribute('data-reset')) {
+    navigator.set('home',{});
   } else if(element.hasAttribute('data-overlay')) {
-    navigator.push('overlay', {}, {isOverlay:true, transition:ScreenTransition.None});
+    navigator.push('overlay', 
+      {state:navigator.getState()}, 
+      {isOverlay:true, transition:element.getAttribute('data-transition') || ScreenTransition.Fade});
   } else {
     const transition = element.getAttribute('data-transition');
     const myState = navigator.current.getState();
@@ -56,7 +60,7 @@ function createScreenFromTemplate(id, state, container) {
   setTemplateString(instance, 'title', state.title);
   const nextTitleBound = setTemplateInput(instance, 'nextTitle', state.nextTitle);
   setTemplateChild(instance, 'standardNav', document.importNode(standard.content, true));
-  setTemplateString(instance, 'state', JSON.stringify(navigator.getState(), null, 1) );
+  setTemplateString(instance, 'state', JSON.stringify(state, null, 1) );
 
   container.appendChild(instance);
 
