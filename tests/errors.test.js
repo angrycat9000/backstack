@@ -17,6 +17,12 @@ describe('Errors',()=>{
     expect(()=>{nav.setState()}).to.throw();
   })
 
+  it('set state with empty stack', async()=>{
+    const nav = (await fixture('<backstack-manager></backstack-manager>'));
+    const state = {stack:[], transition:''};
+    expect( ()=>{nav.setState(state)} ).to.not.throw();
+  })
+
   it('bad screen factory return', async()=>{
     const nav = (await fixture('<backstack-manager></backstack-manager>'));
     nav.screenFactory = function(id, state, container) {
