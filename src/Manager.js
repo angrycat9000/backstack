@@ -500,7 +500,6 @@ export class Manager extends LitElement  {
     .fade-down {transform: translate3d(0, -25%, 0); opacity:0}
     `;}
 }
-window.customElements.define('backstack-manager', Manager);
 
 function jsonScreenFactory(id, state, container) {
   container.innerHTML = `<h1>State for '${id}'</h1><pre>${JSON.stringify(state)}</pre>`;

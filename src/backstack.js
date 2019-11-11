@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2019 Mark Dane
- * backstack 1.0.0 
+ * backstack
  * https://backstack.netlify.com/
  * 
  * Licensed under the terms of the MIT License
@@ -13,3 +13,5 @@ import Manager from './Manager';
 import ScreenTransition from './ScreenTransition'
 
 export {Manager, ScreenTransition}
+
+window.customElements.define('backstack-manager', Manager);
