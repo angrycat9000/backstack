@@ -1,8 +1,10 @@
 import {terser} from "rollup-plugin-terser";
 import license from './rollup.license';
+import babel from './rollup.babel';
 
 function getPlugins(isProd) {
   let plugins = [
+    babel,
     terser({
       mangle:false,
       compress:false,
@@ -23,7 +25,7 @@ const config = {
   output: {
     file: './dist/backstack-import.js',
     format: 'esm',
-    sourcemap: true,
+    sourcemap: false,
   },
   external: [ 'lit-element' ]
 };

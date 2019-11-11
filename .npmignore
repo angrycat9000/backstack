@@ -4,3 +4,8 @@ dist/polyfills/
 dist/legacy
 dist/backstack.js*
 dist/index*
+jsdoc.json
+karma.conf.js
+rollup*
+tests/
+example/
