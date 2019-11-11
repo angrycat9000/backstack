@@ -3,7 +3,7 @@
 
 # Backstack
 
-Animated, stateful and simple single page app functionality for use with Cordova. 
+Animated, stateful, and simple single page app functionality for use with Cordova. 
 
 This component includes the ability to **save and restore state**.  This is important for Cordova Android apps which may get shutdown in the background.  This component allows the app to restore the screen history when the app is reloaded. Other SPA and router frameworks that rely on the built in browser history lose that history after the app is reloaded. 
 
@@ -19,56 +19,78 @@ This assumes it will be bundled in a larger package using webapp, rollup, or ano
 npm install backstack
 ```
 
-```javascript
-import {Manager, ScreenTransition} from 'backstack';
-```
-
 
 ## Usage
 
 ```html
-<backstack-manager id="myApp"><backstack-manager>
+<backstack-manager id="myApp"></backstack-manager>
 ```
 
-### Navigator Functions
-
-Set the default transition to use for screen entry
-```javascript
-nav.transition = // a ScreenTransition value
-```
-
-Show the given screen, saving the history of previous screens.
-
-```javavscript
-nav.push(id, state, [options])
-```
-
-Show the given screen and clear out all screen history
+Set the screen factory property in JavaScript.  Optionally set the transition property as well for the default transition.
 
 ```javascript
-nav.set(id, state, [options])
+import {ScreenTransition} from 'backstack';
+
+const nav = document.getElementById('myApp');
+
+// see screen factory function section for more details
+nav.screenFactory = (id, state, container)=>{
+  return {getState:function() {}}; 
+}
 ```
+
+### Navigator Functionality
+
+These examples show basic usage.  Consult the [API documentation](https://backstack.netlify.com/docs/) for more details.
+
+#### transition
+
+Set the default transition to use.  Individual operations can override this in options.
+
+```javascript
+nav.transition = ScreenTransition.SlideLeft;
+```
+
+#### push(id, state, [options])
+Show new screen.  Save the history of previous screens.
+
+```javascript
+nav.push('simple-screen', {counter:5});
+```
+
+#### set(id, state, [options])
+
+Show the new screen and clear out all screen history.
+
+```javascript
+nav.set('simple-screen', {counter:5});
+```
+
+#### back()
 
 Hide the current screen and show the previous screen in the history.
 
 ```javascript
-nav.back([transition])
+nav.back()
 ```
+
+#### getState() and setState()
 Saving and restoring state.
-```
+```javascript
 const state = nav.getState();
 nav.setState(state);
 ```
 
 ### Screen Factory Function
 
-You must implement a function to provide the contents of your screens to the navigator.
+You must implement a function to provide the contents of your screens to the navigator.  This function has two responsiblities:
 
-You need to populate the `HTMLElement` container with the contents of the screen represented by `state` and `id`.
+* Populate the `HTMLElement container` with the contents of the screen represented by `state` and `id`.
+* Provide callbacks for getting the current state of the screen and other lifecycle operations.
 
 The return value is an object with at least one function, `getState`. This is the function should return any state that needs to be saved for the screen that was just created.
 
-You can also include a disconnect function if you need to do cleanup with the screen is removed.
+You can also include a disconnect function if you need to do cleanup when the screen is removed.
 
 ```javascript
 const e = document.getElementById('myApp');
