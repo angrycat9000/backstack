@@ -77,6 +77,10 @@ function createScreenFromTemplate(id, state, container) {
   }
 }
 
+function screenId(item) {
+  return item ? `"${item.id}"` : 'null';
+}
+
 var navigator;
 function run() {
   document.addEventListener('click', click);
@@ -89,6 +93,9 @@ function run() {
 
   navigator = document.getElementById('screen');
   navigator.screenFactory = createScreenFromTemplate;
+  navigator.addEventListener('screen',(e)=>{
+    console.log(`Screen change from ${screenId(e.detail.from)} to ${screenId(e.detail.to)}`);
+  })
   window.wamNavigator = navigator;
 
   navigator.set('home',{}).then(()=>console.log('Init'))  

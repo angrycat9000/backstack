@@ -126,6 +126,11 @@ export class Manager extends LitElement  {
     return length > 1 ? this._stack[length - 2] : null;
   }
 
+  /**
+   * Set the viewport id and put the item on the stack
+   * @param {NavigationItem} item
+   * @private
+   */
   pushNextItem(item) {
     let id = this.current ? this.current.viewportId : 0;
     if( ! item.isOverlay)
@@ -204,7 +209,6 @@ export class Manager extends LitElement  {
 
     const from = this._stack.pop();
     const to = this.current;
-
     return this.animateOut(from, to);
   }
 
@@ -268,9 +272,23 @@ export class Manager extends LitElement  {
     this._targetTransition = ''
     this.transition = state.transition || ScreenTransition.None;
 
+    this.fireScreenEvent(null, this.current);
+
     return this.updateComplete.then(()=>{
       this.hydrateViewport(this.current.viewportId);
     });
+  }
+
+
+  /**
+   * Raise the 'screen' event when the screen changes
+   * @param {NavigationItem} from
+   * @param {NavigationItem} to
+   * @private
+   */
+  fireScreenEvent(from, to) {
+    const e = new CustomEvent('screen', {detail: {from, to}});
+    this.dispatchEvent(e);
   }
 
 
@@ -286,6 +304,8 @@ export class Manager extends LitElement  {
 
     if(previous)
       previous.preserveState();
+
+    this.fireScreenEvent(previous, entering);
 
     if( ! entering.transition) {
       this._baseId = entering.viewportId;
@@ -368,6 +388,8 @@ export class Manager extends LitElement  {
       return Promise.reject('Cannot animate out nothing');
 
     leaving.preserveState();
+
+    this.fireScreenEvent(leaving, next);
 
     if( ! leaving.transition) {
       this._baseId = next.viewportId;
