@@ -27,8 +27,8 @@ const TEMP_SET = 'temp-set';
 
  /**
  * @typedef Screen
- * @property {getStateFunction} getState
- * @property {disconnectFunction} [disconnect]
+ * @property {getStateFunction} getState function to return a momento object representing the current state of the screen
+ * @property {disconnectFunction} [disconnect] function to call when the screen elements are no longer needed in the DOM
  */
 
  
@@ -48,7 +48,7 @@ const TEMP_SET = 'temp-set';
 
 /**
  * @typedef ItemState
- * @property {object} state
+ * @property {object} state momento object from caller
  * @property {string} id
  * @property {ScreenTransition} transition
  * @property {ScrollValues} viewportScroll
