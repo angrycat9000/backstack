@@ -27,33 +27,44 @@ export class NavigationItem {
       ...options
     };
 
-    /**  @type {string} */
+    /**
+     * @type {string}
+     * @readonly
+     */
     this.id = id;
 
-    /** @type {Manager} */
+    /** 
+     * @type {Manager}
+     * @readonly
+     */
     this.parent = parent;
+
     this._stateValue = state;
     this._hydrated = null;
-
-
     this._element = null;
 
     /** 
      * @type {number}
-     * @private 
+     * @package
      */
     this.viewportId = -1;
 
     /** 
      * @type {ScrollValues}   
-     * @private 
+     * @package
      */
     this.viewportScroll = options.viewportScroll;
 
-    /** @type {ScreenTransition} */
+    /**
+     * @type {ScreenTransition} 
+     * @readonly 
+     */
     this.transition = options.transition;
 
-    /** @type {boolean}  */
+    /**
+     * @type {boolean}
+     * @readonly
+     */
     this.isOverlay = options.isOverlay;
 
     this._tempViewportId = '';
@@ -61,7 +72,7 @@ export class NavigationItem {
 
   /** 
    * @type {boolean}
-   * @private
+   * @package
    */
   get isHydrated() {
     return null != this._hydrated;
@@ -71,6 +82,7 @@ export class NavigationItem {
    * Return the state of this screen.  Could be from the stored state if the screen is not active. 
    * Or the result of the {@link Screen#getState} callback
    * @return {object}
+   * @public
    */
   getState() {
     if( ! this.isHydrated  || ! this._hydrated.getState) 
@@ -79,9 +91,10 @@ export class NavigationItem {
     const s = this._hydrated.getState() || {};
     return s;
   }
-
-  /**
-   * 
+  
+  /** 
+   * @type {Number}
+   * @package
    */
   get tempViewportId() {return this._tempViewportId}
   set tempViewportId (value) {
@@ -92,6 +105,7 @@ export class NavigationItem {
 
   /**
    * @type {string}
+   * @package
    */
   get slot() {
     return this.tempViewportId || this.viewportId || 'none';
@@ -100,7 +114,7 @@ export class NavigationItem {
   /**
    * Stores the current state and viewport scroll info.
    * Needed to save the screen before it is disconnected.
-   * @private
+   * @package
    */
   preserveState() {
     this._stateValue = this.getState();
@@ -110,7 +124,7 @@ export class NavigationItem {
 
   /**
    * @return {ScrollValues}
-   * @private
+   * @package
    */
   getScroll() {
     if( ! this._element)
@@ -119,7 +133,7 @@ export class NavigationItem {
   }
   /**
    * @param {ScrollValues} value
-   * @private
+   * @package
    */
   setScroll(value) {
     if( ! this._element)
@@ -132,7 +146,7 @@ export class NavigationItem {
    * Get the currently hydrated element representing this screen, or hydrate
    * a new element
    * @return {HTMLElement}
-   * @private
+   * @package
    */
   hydrate() {
     if (this._hydrated || ! this.parent.screenFactory) 
@@ -163,7 +177,7 @@ export class NavigationItem {
 
   /**
    * Removes this screen from the DOM and calls the disconnect method
-   * @private
+   * @package
    */
   dehydrate() {
     if(null == this._hydrated)

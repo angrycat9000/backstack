@@ -9,9 +9,10 @@
  * @license @nocompile
  */
 
+import Action from './Action';
 import Manager from './Manager';
 import ScreenTransition from './ScreenTransition'
 
-export {Manager, ScreenTransition}
+export {Manager, ScreenTransition, Action}
 
 window.customElements.define('backstack-manager', Manager);

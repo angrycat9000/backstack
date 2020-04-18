@@ -1,10 +1,11 @@
 /**
  * List of possible transitions to a new screen.  Screens exit with
  * the inverse of the transition that they entered with.
+ * @readonly
  * @enum {string}
  */
 const ScreenTransition = {
-    /** No transtiion */
+    /** No transition */
     None: '',
     /** New screen slides in from right edge moving left */
     SlideLeft: 'slide-left',

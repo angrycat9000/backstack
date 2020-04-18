@@ -16,7 +16,7 @@ This component includes the ability to **save and restore state**.  This is impo
 This assumes it will be bundled in a larger package using webapp, rollup, or another bundler.  It requires LitElement to be available as a peer dependency.  No polyfills included.
 
 ```
-npm install backstack
+npm install --save backstack
 ```
 
 

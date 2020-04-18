@@ -1,6 +1,7 @@
 "use strict";
 import ScreenTransition from './ScreenTransition';
 import NavigationItem from './NavigationItem';
+import Action from './Action';
 import {LitElement, html, css} from 'lit-element';
 
 const TEMP_OVERLAY = 'temp-overlay';
@@ -36,14 +37,16 @@ const TEMP_SET = 'temp-set';
  * @typedef ScrollValues
  * @property {number} x
  * @property {number} y
+ * @package
  */
 
 
 /**
  * @typedef ScreenChange
- * @property {NavigationItem} from
- * @property {NavigationItem} to 
+ * @property {NavigationItem} from The screen that was previously shown
+ * @property {NavigationItem} to The screen that will become visible
  * @property {Manager} controller
+ * @property {Action} action type of call that triggered this transition
  */
 
 /**
@@ -63,6 +66,9 @@ const TEMP_SET = 'temp-set';
 /**
  * Web component to manage display of pages or screens in a 
  * single page application for Cordova.
+ * @fires Manager#before-change
+ * @fires Manager#after-change
+ * @public
  */
 export class Manager extends LitElement  {
   /**
@@ -111,6 +117,7 @@ export class Manager extends LitElement  {
   /** 
    * Top most screen in the history stack.
    * @type {NavigationItem}
+   * @readonly
    */
   get current() {
     const length = this._stack.length;
@@ -120,6 +127,8 @@ export class Manager extends LitElement  {
   /**
    * Previous screen in the navigation stack, or null
    * @type {NavigationItem} 
+   * @readonly
+   * @public
    */  
   get previous() {
     const length = this._stack.length;
@@ -146,13 +155,22 @@ export class Manager extends LitElement  {
    * @param {object} state passed to {@link screenFactoryFunction}
    * @param {Options} [options]
    * @return {Promise<ScreenChange>}
+   * @public
    */
   push(id, state, options) {
     const next = new NavigationItem(this, id, state, options);
 
+    if( !this.checkBeforeChange(this.current, next, Action.Push))
+      return Promise.reject('Event handler aborted screen change');
+
     const from = this.current;
     this.pushNextItem(next);
-    return this.animateIn(next, from);
+    return this.animateIn(next, from)
+      .then(item => {
+        item.action = Action.Push;
+        this.notifyAfterChange(item);
+        return item;
+      })
   }
 
   /**
@@ -161,9 +179,14 @@ export class Manager extends LitElement  {
    * @param {object} state passed to {@link screenFactoryFunction}
    * @param {Options} [options]
    * @return {Promise<ScreenChange>}
+   * @public
    */
   set(id, state, options) {
     const newScreen = new NavigationItem(this, id, state, options);
+
+    if( !this.checkBeforeChange(this.current, newScreen, Action.Set))
+      return Promise.reject('Event handler aborted screen change');
+
     const previous = this.current;
     const oldStack = this._stack;
     this._stack = [];
@@ -171,11 +194,13 @@ export class Manager extends LitElement  {
     newScreen.tempViewportId = TEMP_SET;
 
     return this.animateIn(newScreen, previous)
-    .then(()=>{
+    .then((item)=>{
       for(const item of oldStack)
         item.dehydrate();
-
-      return {from:previous, to:newScreen, controller:this};
+      
+      item.action = Action.Set;
+      this.notifyAfterChange(item);
+      return item;
     })
   }
 
@@ -186,35 +211,55 @@ export class Manager extends LitElement  {
    * @param {object} state passed to {@link screenFactoryFunction}
    * @param {Options} [options]
    * @return {Promise<ScreenChange>}
+   * @public
    */
   replace(id, state, options) {
+    const next = new NavigationItem(this, id, state, options);
+
+    if( !this.checkBeforeChange(this.current, next, Action.Replace))
+      return Promise.reject('Event handler aborted screen change');
+    
     if(this._stack.length < 1)
       return this.set(id, state, options);
     
     const previous = this._stack.pop();
 
-    const next = new NavigationItem(this, id, state, options);
     next.tempViewportId = TEMP_SET;
     this.pushNextItem(next);
     return this.animateIn(next, previous)
+    .then(item => {
+      item.action = Action.Replace;
+      this.notifyAfterChange(item);
+      return item;
+    })
   }
 
   /**
    * Remove the current screen from the stack and show the one below it.
    * @return {Promise<ScreenChange>}
+   * @public
    */
   back() {
-    if (this._stack.length < 2)
-      return Promise.reject('Not enough screens to go back');
+    if( !this.checkBeforeChange(this.current, this.previous, Action.Back))
+      return Promise.reject('Event handler aborted screen change');
+
+    if(this._stack.length < 2) 
+      return Promise.reject('Event handler aborted screen change');
 
     const from = this._stack.pop();
     const to = this.current;
-    return this.animateOut(from, to);
+    return this.animateOut(from, to)
+      .then((item) => {
+        item.action = Action.Back;
+        this.notifyAfterChange(item);
+        return item;
+      });
   }
 
   /**
    * @memberof Manager
    * @return {NavigatorState}
+   * @public
    */
   getState() {
     return {
@@ -229,7 +274,7 @@ export class Manager extends LitElement  {
         if(item.isOverlay)
           itemState.isOverlay = true;
         
-        return itemState;        
+        return itemState;
       })
     } 
   }
@@ -238,7 +283,8 @@ export class Manager extends LitElement  {
   /**
    * Replace the current screen and history stack with the provided state
    * @param {NavigatorState}
-   * @return {Promise}
+   * @return {Promise<Manager>}
+   * @public
    */
   setState(state) {
     if( ! state)
@@ -272,21 +318,65 @@ export class Manager extends LitElement  {
     this._targetTransition = ''
     this.transition = state.transition || ScreenTransition.None;
 
-    this.fireScreenEvent(null, this.current);
+    this.fireLegacyEvent(null, this.current);
+    //this.notifyAfterChange(null, this.current, Action.State)
 
     return this.updateComplete.then(()=>{
       this.hydrateViewport(this.current.viewportId);
+      return this;
     });
+  }
+
+  /**
+   * Raise the `before-change` event prior to committing to a screen change.
+   * @param {NavigationItem} to
+   * @param {Action} action
+   * @private
+   */
+  checkBeforeChange(from, to, action) {
+    /**
+     * Occurs before the transition to a new screen.  This is a cancelable event.
+     * 
+     * @event Manager#before-change
+     * @type {CustomEvent}
+     * @property {NavigationItem} details.to screen that is leaving
+     * @property {NavigationItem} details.from screen that is entering
+     * @property {Action} details.action action that caused this transition
+     */
+
+    const e = new CustomEvent('before-change', {detail: {from, to, action}, cancelable:true});
+    return this.dispatchEvent(e);
+  }
+
+  /**
+   * Raise the 'after-change' event when the screen change has completed.
+   * @param {ScreenChange} change
+   * @private
+   */
+  notifyAfterChange(change) {
+
+    /**
+     * Occurs after the transition to a new screen has completed.
+     * @event Manager#after-change
+     * @type {CustomEvent}
+     * @property {NavigationItem} details.to screen that is leaving
+     * @property {NavigationItem} details.from screen that is entering
+     * @property {Action} details.action action that caused this transition
+     */
+    const e = new CustomEvent('after-change', {detail: change});
+    this.dispatchEvent(e);
   }
 
 
   /**
-   * Raise the 'screen' event when the screen changes
+   * Raise the 'screen' event when the screen changes.  This was the original
+   * event that was broken into 'before-change' and 'after-change' for 
+   * more control. Will be deprecated on next major release.
    * @param {NavigationItem} from
    * @param {NavigationItem} to
    * @private
    */
-  fireScreenEvent(from, to) {
+  fireLegacyEvent(from, to, action) {
     const e = new CustomEvent('screen', {detail: {from, to}});
     this.dispatchEvent(e);
   }
@@ -295,7 +385,7 @@ export class Manager extends LitElement  {
    /**
    * @param {NavigationItem} entering
    * @param {NavigationItem} previous
-   * @return {Promise<ScreenChange>{}
+   * @return {Promise<ScreenChange>}
    * @private
    */
   animateIn(entering, previous) {
@@ -305,7 +395,7 @@ export class Manager extends LitElement  {
     if(previous)
       previous.preserveState();
 
-    this.fireScreenEvent(previous, entering);
+    this.fireLegacyEvent(previous, entering);
 
     if( ! entering.transition) {
       this._baseId = entering.viewportId;
@@ -363,6 +453,9 @@ export class Manager extends LitElement  {
     });
   }
 
+  /**
+   * @private
+   */
   dehydrateViewport(id) {
     for(let item of this._stack) {
       if(id == item.viewportId)
@@ -370,6 +463,9 @@ export class Manager extends LitElement  {
     }
   }
 
+  /**
+   * @private
+   */
   hydrateViewport(id) {
     for(let item of this._stack) {
       if(id == item.viewportId)
@@ -389,7 +485,7 @@ export class Manager extends LitElement  {
 
     leaving.preserveState();
 
-    this.fireScreenEvent(leaving, next);
+    this.fireLegacyEvent(leaving, next);
 
     if( ! leaving.transition) {
       this._baseId = next.viewportId;
@@ -437,6 +533,9 @@ export class Manager extends LitElement  {
     })
   }
 
+  /**
+   * @private
+   */
   transitionEnd(e) {
     if(this.afterTransition) {
       this.afterTransition();
@@ -444,6 +543,9 @@ export class Manager extends LitElement  {
     }
   }
 
+  /**
+   * @private
+   */
   render() {
     var screenClass = this._isAnimating ? 'screen animating' : 'screen';
     return html`

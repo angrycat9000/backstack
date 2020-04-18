@@ -17,7 +17,8 @@
       "template": "./node_modules/braintree-jsdoc-template",
       "encoding": "utf8",
       "destination": "./docs/",
-      "recurse": true
+      "recurse": true,
+      "access": ["public", "undefined"]
   },
   "plugins": [
       "plugins/markdown"
