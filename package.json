@@ -1,6 +1,6 @@
 {
   "name": "backstack",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Animated, stateful and simple single page app functionality for use with Cordova.",
   "main": "dist/backstack-import.js",
   "scripts": {

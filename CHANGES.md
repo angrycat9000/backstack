@@ -1,3 +1,6 @@
+# 1.2.2
+- netlify site build fixes
+
 # 1.2.1
 - dependency upgrades
 
