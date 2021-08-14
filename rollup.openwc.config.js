@@ -1,14 +1,12 @@
-import { createCompatibilityConfig } from '@open-wc/building-rollup';
+import { createSpaConfig } from '@open-wc/building-rollup';
 import license from './rollup.license';
+import merge from 'deepmerge';
 
-// if you need to support IE11 use `createCompatibilityConfig` instead.
-// import { createCompatibilityConfig } from '@open-wc/building-rollup';
-// export default createCompatibilityConfig({ input: './index.html' });
 function config() {
-  var c = createCompatibilityConfig({input: './example/index.html'});
-  return c.map((config,i)=>{
-    config.plugins.push(license);
-    return config;
+  var c = createSpaConfig({injectServiceWorker: false});
+  return merge(c, {
+    input: './example/index.html',
+    plugins: [license]
   })
 } 
 
