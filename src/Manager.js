@@ -343,7 +343,6 @@ export class Manager extends LitElement  {
      * @property {NavigationItem} details.from screen that is entering
      * @property {Action} details.action action that caused this transition
      */
-
     const e = new CustomEvent('before-change', {detail: {from, to, action}, cancelable:true});
     return this.dispatchEvent(e);
   }
@@ -354,7 +353,6 @@ export class Manager extends LitElement  {
    * @private
    */
   notifyAfterChange(change) {
-
     /**
      * Occurs after the transition to a new screen has completed.
      * @event Manager#after-change
@@ -366,7 +364,6 @@ export class Manager extends LitElement  {
     const e = new CustomEvent('after-change', {detail: change});
     this.dispatchEvent(e);
   }
-
 
   /**
    * Raise the 'screen' event when the screen changes.  This was the original
@@ -380,7 +377,6 @@ export class Manager extends LitElement  {
     const e = new CustomEvent('screen', {detail: {from, to}});
     this.dispatchEvent(e);
   }
-
 
    /**
    * @param {NavigationItem} entering
