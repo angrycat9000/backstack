@@ -6,7 +6,7 @@ module.exports = config => {
       files: [
         { pattern: config.grep ? config.grep : 'tests/**/*.test.js', type: 'module' }
       ],
-      coverageIstanbulReporter: {
+      coverageReporter: {
         dir:'dist/coverage'
       },
       esm: {
