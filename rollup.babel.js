@@ -1,7 +1,7 @@
-const babel = require('rollup-plugin-babel');
+import { getBabelOutputPlugin } from '@rollup/plugin-babel';
 const customMinifyCss = require('@open-wc/building-utils/custom-minify-css');
 
-var babelPlugin = babel({
+var babelPlugin = getBabelOutputPlugin({
   "presets": [
     [
       "@babel/preset-env",
@@ -9,13 +9,13 @@ var babelPlugin = babel({
         "modules": false,
         "targets": {
           "esmodules": true
-        }
+        },
       }
     ]
   ],
   "plugins": [
     ["@babel/plugin-proposal-decorators",{ "legacy": true }],
-    ["@babel/plugin-proposal-class-properties",{ "loose": true }],
+    ["@babel/plugin-proposal-class-properties"],
     ['template-html-minifier',
       {
         modules: {
