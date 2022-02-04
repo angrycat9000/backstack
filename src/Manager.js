@@ -339,8 +339,8 @@ export class Manager extends LitElement  {
      * 
      * @event Manager#before-change
      * @type {CustomEvent}
-     * @property {NavigationItem} details.to screen that is leaving
-     * @property {NavigationItem} details.from screen that is entering
+     * @property {NavigationItem} details.to screen that is entering
+     * @property {NavigationItem} details.from screen that is leaving
      * @property {Action} details.action action that caused this transition
      */
     const e = new CustomEvent('before-change', {detail: {from, to, action}, cancelable:true});
@@ -357,8 +357,8 @@ export class Manager extends LitElement  {
      * Occurs after the transition to a new screen has completed.
      * @event Manager#after-change
      * @type {CustomEvent}
-     * @property {NavigationItem} details.to screen that is leaving
-     * @property {NavigationItem} details.from screen that is entering
+     * @property {NavigationItem} details.to screen that is entering
+     * @property {NavigationItem} details.from screen that is leaving
      * @property {Action} details.action action that caused this transition
      */
     const e = new CustomEvent('after-change', {detail: change});

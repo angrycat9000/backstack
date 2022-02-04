@@ -1,3 +1,7 @@
+# 1.2.3
+- Fix documentation error with `to` and `from` properties of `before-change` and `after-change` event
+
+
 # 1.2.2
 - netlify site build fixes
 
