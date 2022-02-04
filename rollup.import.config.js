@@ -27,7 +27,7 @@ const config = {
     format: 'esm',
     sourcemap: false,
   },
-  external: [ 'lit-element' ]
+  external: [ 'lit' ]
 };
 
 export default (args)=>{

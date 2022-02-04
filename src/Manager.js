@@ -2,7 +2,7 @@
 import ScreenTransition from './ScreenTransition';
 import NavigationItem from './NavigationItem';
 import Action from './Action';
-import {LitElement, html, css} from 'lit-element';
+import {LitElement, html, css} from 'lit';
 
 const TEMP_OVERLAY = 'temp-overlay';
 const TEMP_SET = 'temp-set';
@@ -105,11 +105,11 @@ export class Manager extends LitElement  {
 
   static get properties() {
     return { 
-      _targetTransition: {type: String},
-      _targetId: {type:String},
-      _baseTransition: {type:String},
-      _baseId: {type: String},
-      _isAnimating: {type:Boolean},
+      _targetTransition: {state:true},
+      _targetId: {state:true},
+      _baseTransition: {state:true},
+      _baseId: {state:true},
+      _isAnimating: {state:true},
       transition: {type:String, attribute:"transition"}
     };
   }

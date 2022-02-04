@@ -19,8 +19,7 @@ var babelPlugin = getBabelOutputPlugin({
     ['template-html-minifier',
       {
         modules: {
-          'lit-html': ['html'],
-          'lit-element': ['html', { name: 'css', encapsulation: 'style' }],
+          'lit': ['html', { name: 'css', encapsulation: 'style' }],
         },
         htmlMinifier: {
           collapseWhitespace: true,
