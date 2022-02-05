@@ -1,7 +1,6 @@
 import {fixture, expect } from '@open-wc/testing';
 import {ScreenTransition} from '../src/backstack';
 
-
 function screenFactory(id, state, container) {
   container.innerHTML = id;
   return {getState:function(){return state}}

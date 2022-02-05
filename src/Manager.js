@@ -322,7 +322,9 @@ export class Manager extends LitElement  {
     //this.notifyAfterChange(null, this.current, Action.State)
 
     return this.updateComplete.then(()=>{
-      this.hydrateViewport(this.current.viewportId);
+      if(this.current) {
+        this.hydrateViewport(this.current.viewportId);
+      }
       return this;
     });
   }

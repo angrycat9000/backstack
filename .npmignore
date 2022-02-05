@@ -4,8 +4,9 @@ dist/polyfills/
 dist/legacy
 dist/backstack.js*
 dist/index*
+coverage/*
 jsdoc.json
-karma.conf.js
+web-test-runner.config.mjs
 rollup*
 tests/
 example/
