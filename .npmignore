@@ -1,10 +1,7 @@
-dist/docs/
-dist/coverage/
-dist/polyfills/
-dist/legacy
-dist/backstack.js*
-dist/index*
-coverage/*
+# dist uses double star since backstack-import.js which is the main file is included
+# there. Ignore everything else
+dist/**
+coverage/
 jsdoc.json
 web-test-runner.config.mjs
 rollup*
