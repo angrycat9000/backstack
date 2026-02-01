@@ -7,9 +7,9 @@ Animated, stateful, and simple single page app functionality for use with Cordov
 
 This component includes the ability to **save and restore state**.  This is important for Cordova Android apps which may get shutdown in the background.  This component allows the app to restore the screen history when the app is reloaded. Other SPA and router frameworks that rely on the built in browser history lose that history after the app is reloaded. 
 
-[Live Demo @ backstack.netlify.com](https://backstack.netlify.com/)
+[Live Demo @ backstack.netlify.app](https://backstack.netlify.app/)
 
-[API Documentation](https://backstack.netlify.com/docs/)
+[API Documentation](https://backstack.netlify.app/docs/)
 
 ## Installation
 
